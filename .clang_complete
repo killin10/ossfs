@@ -1,0 +1,4 @@
+-DDEBUG
+-Wno-deprecated-declarations
+-std=c++0x
+-I./include

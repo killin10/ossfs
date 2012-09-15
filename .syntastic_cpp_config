@@ -1,0 +1,6 @@
+-DDEBUG
+-D__STDC_FORMAT_MACROS
+-D__STDC_LIMIT_MACROS
+-Wno-deprecated-declarations
+-std=c++0x
+-I./include
