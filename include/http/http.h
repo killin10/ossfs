@@ -9,8 +9,8 @@
  * @author shiwei<shiwei2012@gmail.com>
  */
 
-#ifndef HTTP_HTTP_H_
-#define HTTP_HTTP_H_
+#ifndef http_http_H_
+#define http_http_H_
 
 // http-related headers
 
@@ -19,5 +19,5 @@
 #include "HttpResponse.h"
 
 
-#endif  // HTTP_HTTP_H_
+#endif  // http_http_H_
 

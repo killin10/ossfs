@@ -9,10 +9,8 @@
  * @author shiwei<shiwei2012@gmail.com>
  */
 
-#ifndef HTTP_HTTPMACROS_H_
-#define HTTP_HTTPMACROS_H_
-
-// macros
+#ifndef http_HttpMacros_H_
+#define http_HttpMacros_H_
 
 // ex. PUT / HTTP/1.1
 #define HTTP_REQUEST_LINE_SEPARATOR_CHR     ' '
@@ -35,10 +33,13 @@
 #define HTTP_LF_STR                            "\n"
 #define HTTP_CRLF                              "\r\n"
 
-// protocol version
-#define HTTP_VERSION_11                     "HTTP/1.1"
+// param separator
+#define HTTP_PARAM_LEADER_CHR               '?'
+#define HTTP_PARAM_LEADER_STR               "?"
+#define HTTP_PARAM_SEPARATOR_CHR            '&'
+#define HTTP_PARAM_SEPARATOR_STR            "&"
 
 
-#endif  // HTTP_HTTPMACROS_H_
+#endif  // http_HttpMacros_H_
 
 

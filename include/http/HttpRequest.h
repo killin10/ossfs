@@ -9,8 +9,8 @@
  * @author shiwei<shiwei2012@gmail.com>
  */
 
-#ifndef HTTP_HTTPREQUEST_H_
-#define HTTP_HTTPREQUEST_H_
+#ifndef http_HttpRequest_H_
+#define http_HttpRequest_H_
 
 #include <map>
 #include <string>
@@ -32,6 +32,9 @@ public:
     static const std::string DELETE;
     static const std::string TRACE;
     static const std::string CONNECT;
+
+    // version
+    static const std::string HTTP_VERSION_11;
 
 public:
     HttpRequest();
@@ -216,5 +219,5 @@ HttpRequest::getBody() const
 }
 
 
-#endif  // HTTP_HTTPREQUEST_H_
+#endif  // http_HttpRequest_H_
 

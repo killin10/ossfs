@@ -9,8 +9,8 @@
  * @author shiwei<shiwei2012@gmail.com>
  */
 
-#ifndef HTTP_HTTPRESPONSE_H_
-#define HTTP_HTTPRESPONSE_H_
+#ifndef http_HttpResponse_H_
+#define http_HttpResponse_H_
 
 #include <string>
 #include <map>
@@ -46,5 +46,5 @@ protected:
 
 
 
-#endif  // HTTP_HTTPRESPONSE_H_
+#endif  // http_HttpResponse_H_
 

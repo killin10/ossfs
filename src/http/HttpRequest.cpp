@@ -31,6 +31,8 @@ const std::string HttpRequest::DELETE = "DELETE";
 const std::string HttpRequest::TRACE = "TRACE";
 const std::string HttpRequest::CONNECT = "CONNECT";
 
+// version
+const std::string HTTP_VERSION_11 = "HTTP/1.1";
 
 
 HttpRequest::HttpRequest()
@@ -114,7 +116,7 @@ HttpRequest::parseFromString(
     const std::string &data
 )
 {
-
+    return true;
 }
 
 bool
@@ -122,7 +124,50 @@ HttpRequest::serializeToString(
     std::string *pData
 ) const
 {
+    if (NULL == pData) {
+        return false;
+    }
 
+    // uri
+
+    std::string furi = _uri;
+
+    if (!_params.empty()) {
+        furi += HTTP_PARAM_LEADER_STR;
+    }
+
+    for (std::map<std::string, std::string>::const_iterator it =
+             _params.begin(); it != _params.end();) {
+        furi += it->first + HTTP_NAME_VALUE_SEPARATOR_STR + it->second;
+
+        if ((++it) != _params.end()) {
+            furi += HTTP_PARAM_SEPARATOR_STR;
+        }
+    }
+
+    // request line
+
+    std::string requestLine = _method + HTTP_REQUEST_LINE_SEPARATOR_STR
+                              + furi + HTTP_REQUEST_LINE_SEPARATOR_STR
+                              + _version + HTTP_CRLF;
+
+    // headers
+
+    std::string headers;
+
+    for (std::map<std::string, std::string>::const_iterator it =
+             _headers.begin(); it != _headers.end(); ++it) {
+        headers += it->first + HTTP_NAME_VALUE_SEPARATOR_STR
+                   + it->second + HTTP_CRLF;
+    }
+
+    // total request
+
+    pData->assign(
+        requestLine + headers + HTTP_CRLF + _body
+    );
+
+    return true;
 }
 
 
