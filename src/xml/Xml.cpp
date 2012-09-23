@@ -1,23 +1,17 @@
 /*
- * =========================================================================
+ * @file Xml.cpp
+ * @brief
  *
- *       Filename:  Xml.cpp
+ * @version 1.0
+ * @date Sat Sep 22 14:47:49 2012
  *
- *    Description:
- *
- *        Version:  1.0
- *        Created:  2012-02-15 17:54:14
- *  Last Modified:  2012-02-15 17:55:27
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Shi Wei (sw), shiwei2012@gmail.com
- *        Company:  NDSL UESTC
- *
- * =========================================================================
+ * @copyright Copyright (C) 2012 UESTC
+ * @author shiwei<shiwei2012@gmail.com>
  */
 
-#include "Xml.h"
+#include "xml/Xml.h"
+
+#include <stdio.h>
 
 #include <string>
 #include <list>
@@ -27,359 +21,412 @@
 #include <libxml/xmlreader.h>
 #include <libxml/xpath.h>
 
-#include "log/log.h"
-
 #define XML_VERSION             "1.0"
 #define XML_ENCODING            "UTF-8"
 #define XML_INDENT_LEVEL        0
 #define XML_FORMAT_ALLOWED      1
 
+namespace ossfs
+{
+
+
 Xml::Xml()
 {
-    m_pDoc = NULL;
+    _doc = NULL;
 }
 
 Xml::~Xml()
 {
-    xmlFreeDoc(m_pDoc);
-    m_pDoc = NULL;
+    xmlFreeDoc(_doc);
+    _doc = NULL;
 }
 
-xmlNode *
+XmlNode *
 Xml::loadFile(const std::string &file)
 {
-    if (NULL != m_pDoc) {
-        WARN_LOG("In Xml::loadFile, m_pDoc != NULL");
-        xmlFreeDoc(m_pDoc);
-        m_pDoc = NULL;
+    if (NULL != _doc) {
+        fprintf(stderr, "[WARNING] In Xml::loadFile, _doc != NULL\n");
+        xmlFreeDoc(_doc);
+        _doc = NULL;
     }
 
-    m_pDoc = xmlReadFile(file.c_str(), XML_ENCODING,
-                         int(XML_PARSE_RECOVER));
+    _doc = xmlReadFile(file.c_str(), XML_ENCODING,
+                       int(XML_PARSE_RECOVER));
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::loadFile, xmlReadFile() error");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::loadFile, xmlReadFile() error\n");
         return NULL;
     }
 
-    xmlNode *pRootNode = xmlDocGetRootElement(m_pDoc);
+    xmlNode *rootNode = xmlDocGetRootElement(_doc);
 
-    if (NULL == pRootNode) {
-        ERROR_LOG("In Xml::loadFile, xmlDocGetRootElement() error");
+    if (NULL == rootNode) {
+        fprintf(stderr, "[ERROR] In Xml::loadFile, "
+                "xmlDocGetRootElement() error\n");
         return NULL;
     }
 
-    return pRootNode;
+    return rootNode;
 }
 
 
-xmlNode *
-Xml::loadMemory(const char *pBuf, int size)
+XmlNode *
+Xml::loadMemory(const char *buf, int size)
 {
-    if (NULL == pBuf) {
-        FATAL_LOG("In Xml::loadMemory, pBuf == NULL");
+    if (NULL == buf) {
+        fprintf(stderr, "[ERROR] In Xml::loadMemory, buf == NULL\n");
         return NULL;
     }
 
-    if (NULL != m_pDoc) {
-        WARN_LOG("In Xml::loadFile, m_pDoc != NULL");
-        xmlFreeDoc(m_pDoc);
-        m_pDoc = NULL;
+    if (NULL != _doc) {
+        fprintf(stderr, "[ERROR] In Xml::loadMemory, _doc != NULL\n");
+        xmlFreeDoc(_doc);
+        _doc = NULL;
     }
 
-    m_pDoc = xmlReadMemory(pBuf, size, NULL, XML_ENCODING,
-                           int(XML_PARSE_RECOVER));
+    _doc = xmlReadMemory(
+               buf,
+               size,
+               NULL,
+               XML_ENCODING,
+               int(XML_PARSE_RECOVER)
+           );
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::loadMemory, xmlReadMemory() error");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::loadMemory, xmlReadMemory() error\n");
         return NULL;
     }
 
-    xmlNode *pRootNode = xmlDocGetRootElement(m_pDoc);
+    xmlNode *rootNode = xmlDocGetRootElement(_doc);
 
-    if (NULL == pRootNode) {
-        ERROR_LOG("In Xml::loadFile, xmlDocGetRootElement() error");
+    if (NULL == rootNode) {
+        fprintf(stderr, "[ERROR] In Xml::loadMemory, "
+                "xmlDocGetRootElement() error\n");
         return NULL;
     }
 
-    return pRootNode;
+    return rootNode;
 }
 
-
-int
-Xml::saveToBuffer(xmlNode *pCurNode, std::string *pBuf)
+bool
+Xml::saveToBuffer(XmlNode *curNode, std::string *buf) const
 {
-    if (NULL == pCurNode) {
-        FATAL_LOG("In Xml::saveToBuffer, pCurNode == NULL");
-        return -1;
+    if (NULL == curNode) {
+        fprintf(stderr, "[ERROR] In Xml::saveToBuffer, curNode == NULL\n");
+        return false;
     }
 
-    if (NULL == pBuf) {
-        FATAL_LOG("In Xml::saveToBuffer, pBuf == NULL");
-        return -1;
+    if (NULL == buf) {
+        fprintf(stderr, "[ERROR] In Xml::saveToBuffer, buf == NULL\n");
+        return false;
     }
 
-    xmlBuffer *pXmlBuf = xmlBufferCreate();
+    xmlBuffer *xmlBuf = xmlBufferCreate();
 
-    if (NULL == pXmlBuf) {
-        ERROR_LOG("In Xml::saveToBuffer, xmlBufferCreate() error");
-        return -1;
+    if (NULL == xmlBuf) {
+        fprintf(stderr, "[ERROR] In Xml::saveToBuffer, "
+                "xmlBufferCreate() error\n");
+        return false;
     }
 
-    int bytes = xmlNodeDump(pXmlBuf, m_pDoc, pCurNode,
+    int bytes = xmlNodeDump(xmlBuf, _doc, curNode,
                             XML_INDENT_LEVEL, XML_FORMAT_ALLOWED);
 
     if (bytes < 0) {
-        ERROR_LOG("In Xml::saveToBuffer, xmlNodeDump() error");
-        return -1;
+        fprintf(stderr, "[ERROR] In Xml::saveToBuffer, xmlNodeDump() error\n");
+        return false;
     }
 
-    *pBuf = (const char *)(pXmlBuf->content);
-    xmlBufferFree(pXmlBuf);
-    pXmlBuf = NULL;
+    *buf = (const char *)(xmlBuf->content);
+    xmlBufferFree(xmlBuf);
+    xmlBuf = NULL;
 
-    return 0;
+    return true;
 }
 
-int
-Xml::saveToBuffer(std::string *pBuf)
+bool
+Xml::saveToBuffer(std::string *buf) const
 {
-    if (NULL == pBuf) {
-        FATAL_LOG("In Xml::saveToBuffer, pBuf == NULL");
-        return -1;
+    if (NULL == buf) {
+        fprintf(stderr, "[ERROR] In Xml::saveToBuffer, buf == NULL\n");
+        return false;
     }
 
-    xmlNode *pRootNode = xmlDocGetRootElement(m_pDoc);
+    xmlNode *rootNode = xmlDocGetRootElement(_doc);
 
-    if (NULL == pRootNode) {
-        ERROR_LOG("In Xml::saveToBuffer, xmlDocGetRootElement() error");
-        return -1;
+    if (NULL == rootNode) {
+        fprintf(stderr, "[ERROR] In Xml::saveToBuffer, "
+                "xmlDocGetRootElement() error\n");
+        return false;
     }
 
-    return saveToBuffer(pRootNode, pBuf);
+    return saveToBuffer(rootNode, buf);
 }
 
-int
-Xml::saveToFile(const std::string &file)
+bool
+Xml::saveToFile(const std::string &file) const
 {
-    int nwrite = xmlSaveFormatFileEnc(file.c_str(), m_pDoc,
+    int nwrite = xmlSaveFormatFileEnc(file.c_str(), _doc,
                                       XML_ENCODING, XML_FORMAT_ALLOWED);
 
     if (-1 == nwrite) {
-        ERROR_LOG("In Xml::saveToFile, xmlSaveFormatFileEnc() error");
-        return -1;
+        fprintf(stderr, "[ERROR] In Xml::saveToFile, "
+                "xmlSaveFormatFileEnc() error\n");
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
-xmlNode *
+XmlNode *
 Xml::createDocument(const std::string &rootName)
 {
-    if (NULL != m_pDoc) {
-        WARN_LOG("In Xml::createDocument, m_pDoc != NULL");
-        xmlFreeDoc(m_pDoc);
-        m_pDoc = NULL;
+    if (NULL != _doc) {
+        fprintf(stderr, "[WARNING] In Xml::createDocument, _doc != NULL\n");
+        xmlFreeDoc(_doc);
+        _doc = NULL;
     }
 
-    m_pDoc = xmlNewDoc(BAD_CAST XML_VERSION);
+    _doc = xmlNewDoc(BAD_CAST XML_VERSION);
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::createDocument, xmlNewDoc() error");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::createDocument, xmlNewDoc() error\n");
         return NULL;
     }
 
-    xmlNode *pRootNode = xmlNewNode(NULL, BAD_CAST rootName.c_str());
-    xmlDocSetRootElement(m_pDoc, pRootNode);
+    xmlNode *rootNode = xmlNewNode(NULL, BAD_CAST rootName.c_str());
+    xmlDocSetRootElement(_doc, rootNode);
 
-    return pRootNode;
+    return rootNode;
 }
 
-xmlNode *
+XmlNode *
 Xml::getRootNode() const
 {
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::getRootNode, m_pDoc == NULL");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::getRootNode, _doc == NULL\n");
         return NULL;
     }
 
-    return xmlDocGetRootElement(m_pDoc);
+    return xmlDocGetRootElement(_doc);
 }
 
 
-xmlNode *
-Xml::getParentNode(xmlNode *pCurNode) const
+XmlNode *
+Xml::getParentNode(XmlNode *curNode) const
 {
-    if (NULL == pCurNode) {
-        FATAL_LOG("In Xml::getParentNode, pCurNode == NULL");
+    if (NULL == curNode) {
+        fprintf(stderr, "[ERROR] In Xml::getParentNode, curNode == NULL\n");
         return NULL;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::getParentNode, m_pDoc == NULL");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::getParentNode, _doc == NULL\n");
         return NULL;
     }
 
-    return pCurNode->parent;
+    return curNode->parent;
 }
 
-xmlNode *
-Xml::getChildNode(xmlNode *pCurNode) const
+XmlNode *
+Xml::getChildNode(XmlNode *curNode) const
 {
-    if (NULL == pCurNode) {
-        FATAL_LOG("In Xml::getFirstChildNode, pCurNode == NULL");
+    if (NULL == curNode) {
+        fprintf(stderr, "[ERROR] In Xml::getFirstChildNode, "
+                "curNode == NULL\n");
         return NULL;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::getFirstChildNode, m_pDoc == NULL");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::getFirstChildNode, _doc == NULL\n");
         return NULL;
     }
 
-    return pCurNode->children;
+    return curNode->children;
 }
 
-int
-Xml::getChildNodes(xmlNode *pCurNode, std::list<xmlNode *> *pNodeList)
+bool
+Xml::getChildNodes(XmlNode *curNode, std::list<XmlNode *> *nodeList) const
 {
-    if (NULL == pCurNode) {
-        FATAL_LOG("In Xml::getChildNodes, pCurNode == NULL");
-        return -1;
+    if (NULL == curNode) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodes, curNode == NULL\n");
+        return false;
     }
 
-    if (NULL == pNodeList) {
-        FATAL_LOG("In Xml::getChildNodes, pNodeList == NULL");
-        return -1;
+    if (NULL == nodeList) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodes, nodeList == NULL\n");
+        return false;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::getChildNodes, m_pDoc == NULL");
-        return -1;
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodes, _doc == NULL\n");
+        return false;
     }
 
-    xmlNode *pChildNode = pCurNode->children;
+    xmlNode *childNode = curNode->children;
 
-    while (NULL != pChildNode) {
-        pNodeList->push_back(pChildNode);
-        pChildNode = pChildNode->next;
+    while (NULL != childNode) {
+        nodeList->push_back(childNode);
+        childNode = childNode->next;
     }
 
-    return 0;
+    return true;
 }
 
-xmlNode *
-Xml::getChildNodeByNodeName(xmlNode *pCurNode,
-                            const std::string &nodeName)
+XmlNode *
+Xml::getChildNodeByNodeName(
+    XmlNode *curNode,
+    const std::string &nodeName
+) const
 {
-    if (NULL == pCurNode) {
-        FATAL_LOG("In Xml::getChildNodeByNodeName, pCurNode == NULL");
+    if (NULL == curNode) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodeByNodeName, "
+                "curNode == NULL\n");
         return NULL;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::getChildNodeByNodeName, m_pDoc == NULL");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodeByNodeName, "
+                "_doc == NULL\n");
         return NULL;
     }
 
-    xmlNode *pChildNode = pCurNode->children;
+    xmlNode *childNode = curNode->children;
 
-    while (NULL != pChildNode) {
-        if (1 == xmlStrEqual(pChildNode->name,
+    while (NULL != childNode) {
+        if (1 == xmlStrEqual(childNode->name,
                              BAD_CAST nodeName.c_str())) {
-            return pChildNode;
+            return childNode;
         }
 
-        pChildNode = pChildNode->next;
+        childNode = childNode->next;
     }
 
     return NULL;
 }
 
 
-int
-Xml::getChildNodesByNodeName(xmlNode *pCurNode,
-                             const std::string &nodeName,
-                             std::list<xmlNode *> *pNodeList)
+bool
+Xml::getChildNodesByNodeName(
+    XmlNode *curNode,
+    const std::string &nodeName,
+    std::list<XmlNode *> *nodeList
+) const
 {
-    if (NULL == pCurNode) {
-        FATAL_LOG("In Xml::getChildNodesByNodeName, pCurNode == NULL");
-        return -1;
+    if (NULL == curNode) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodesByNodeName, "
+                "curNode == NULL\n");
+        return false;
     }
 
-    if (NULL == pNodeList) {
-        FATAL_LOG("In Xml::getChildNodesByNodeName, pNodeList == NULL");
-        return -1;
+    if (NULL == nodeList) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodesByNodeName, "
+                "nodeList == NULL\n");
+        return false;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::getChildNodesByNodeName, m_pDoc == NULL");
-        return -1;
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodesByNodeName, "
+                "_doc == NULL\n");
+        return false;
     }
 
-    xmlNode *pChildNode = pCurNode->children;
+    xmlNode *childNode = curNode->children;
 
-    while (NULL != pChildNode) {
-        if (1 == xmlStrEqual(pChildNode->name,
+    while (NULL != childNode) {
+        if (1 == xmlStrEqual(childNode->name,
                              BAD_CAST nodeName.c_str())) {
-            pNodeList->push_back(pChildNode);
+            nodeList->push_back(childNode);
         }
 
-        pChildNode = pChildNode->next;
+        childNode = childNode->next;
     }
 
-    return 0;
+    return true;
 }
 
 
-int
-Xml::getChildNodeValueByNodeName(xmlNode *pCurNode,
-                                 const std::string &childNodeName,
-                                 std::string *pValue)
+std::string
+Xml::getChildNodeValueByNodeName(
+    XmlNode *curNode,
+    const std::string &childNodeName
+) const
 {
-    if (NULL == pCurNode) {
-        FATAL_LOG("In Xml::getChildNodeValueByNodeName, pCurNode == NULL");
-        return -1;
+    std::string value;
+
+    if (getChildNodeValueByNodeName(curNode, childNodeName, &value)) {
+        return value;
     }
 
-    if (NULL == pValue) {
-        FATAL_LOG("In Xml::getChildNodeValueByNodeName, pValue == NULL");
-        return -1;
-    }
-
-    xmlNode *pChildNode = getChildNodeByNodeName(pCurNode, childNodeName);
-
-    if (NULL == pChildNode) {
-        ERROR_LOG("In Xml::getChildNodeValueByNodeName, "
-                  "getChildNodeByNodeName() error");
-        return -1;
-    }
-
-    return getNodeValue(pChildNode, pValue);
+    return "";
 }
 
-int
-Xml::getNodeValue(xmlNode *pCurNode, std::string *pValue)
+bool
+Xml::getChildNodeValueByNodeName(
+    XmlNode *curNode,
+    const std::string &childNodeName,
+    std::string *pValue
+) const
 {
-    if (NULL == pCurNode) {
-        FATAL_LOG("In Xml::getNodeValue, pCurNode == NULL");
-        return -1;
+    if (NULL == curNode) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodeValueByNodeName, "
+                "curNode == NULL\n");
+        return false;
     }
 
     if (NULL == pValue) {
-        FATAL_LOG("In Xml::getNodeValue, pValue == NULL");
-        return -1;
+        fprintf(stderr, "[ERROR] In Xml::getChildNodeValueByNodeName, "
+                "pValue == NULL\n");
+        return false;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::getNodeValue, m_pDoc == NULL");
-        return -1;
+    xmlNode *childNode = getChildNodeByNodeName(curNode, childNodeName);
+
+    if (NULL == childNode) {
+        fprintf(stderr, "[ERROR] In Xml::getChildNodeValueByNodeName, "
+                "getChildNodeByNodeName() error\n");
+        return false;
     }
 
-    xmlChar *pXmlValue = xmlNodeGetContent(pCurNode);
+    return getNodeValue(childNode, pValue);
+}
+
+std::string
+Xml::getNodeValue(XmlNode *curNode) const
+{
+    std::string value;
+
+    if (getNodeValue(curNode, &value)) {
+        return value;
+    }
+
+    return "";
+}
+
+bool
+Xml::getNodeValue(XmlNode *curNode, std::string *pValue) const
+{
+    if (NULL == curNode) {
+        fprintf(stderr, "[ERROR] In Xml::getNodeValue, curNode == NULL\n");
+        return false;
+    }
+
+    if (NULL == pValue) {
+        fprintf(stderr, "[ERROR] In Xml::getNodeValue, pValue == NULL\n");
+        return false;
+    }
+
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::getNodeValue, _doc == NULL\n");
+        return false;
+    }
+
+    xmlChar *pXmlValue = xmlNodeGetContent(curNode);
 
     if (NULL == pXmlValue) {
-        ERROR_LOG("In Xml::getNodeValue, xmlNodeGetContent() error");
-        return -1;
+        fprintf(stderr, "[ERROR] In Xml::getNodeValue, "
+                "xmlNodeGetContent() error\n");
+        return false;
     }
 
     *pValue = (const char *) pXmlValue;
@@ -388,136 +435,139 @@ Xml::getNodeValue(xmlNode *pCurNode, std::string *pValue)
     return 0;
 }
 
-int
-Xml::setNodeValue(xmlNode *pCurNode, const std::string &value)
+bool
+Xml::setNodeValue(XmlNode *curNode, const std::string &value)
 {
-    if (NULL == pCurNode) {
-        FATAL_LOG("In Xml::setNodeValue, pCurNode == NULL");
-        return -1;
+    if (NULL == curNode) {
+        fprintf(stderr, "[ERROR] In Xml::setNodeValue, curNode == NULL\n");
+        return false;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::setNodeValue, m_pDoc == NULL");
-        return -1;
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::setNodeValue, _doc == NULL\n");
+        return false;
     }
 
-    xmlNodeSetContent(pCurNode, BAD_CAST value.c_str());
+    xmlNodeSetContent(curNode, BAD_CAST value.c_str());
 
-    return 0;
+    return true;
 }
 
-xmlNode *
-Xml::addChildNode(xmlNode *pParentNode,
-                  const std::string &nodeName,
-                  const std::string &nodeValue)
+XmlNode *
+Xml::addChildNode(
+    XmlNode *parentNode,
+    const std::string &nodeName,
+    const std::string &nodeValue
+)
 {
-    if (NULL == pParentNode) {
-        FATAL_LOG("In Xml::addChildNode, pParentNode = NULL");
+    if (NULL == parentNode) {
+        fprintf(stderr, "[ERROR] In Xml::addChildNode, parentNode = NULL\n");
         return NULL;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::addChildNode, m_pDoc == NULL");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::addChildNode, _doc == NULL\n");
         return NULL;
     }
 
-    return xmlNewTextChild(pParentNode, NULL,
-                           BAD_CAST nodeName.c_str(),
-                           BAD_CAST nodeValue.c_str());
+    return xmlNewTextChild(
+               parentNode, NULL,
+               BAD_CAST nodeName.c_str(),
+               BAD_CAST nodeValue.c_str()
+           );
 }
 
-xmlNode *
-Xml::addChildNode(xmlNode *pParentNode,
-                  const std::string &nodeName)
+XmlNode *
+Xml::addChildNode(XmlNode *parentNode, const std::string &nodeName)
 {
-    if (NULL == pParentNode) {
-        FATAL_LOG("In Xml::addChildNode, pParentNode == NULL");
+    if (NULL == parentNode) {
+        fprintf(stderr, "[ERROR] In Xml::addChildNode, parentNode == NULL\n");
         return NULL;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::addChildNode, m_pDoc = NULL");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::addChildNode, _doc = NULL\n");
         return NULL;
     }
 
-    xmlNode *pChildNode = xmlNewNode(NULL, BAD_CAST nodeName.c_str());
+    xmlNode *childNode = xmlNewNode(NULL, BAD_CAST nodeName.c_str());
 
-    if (NULL == pChildNode) {
-        ERROR_LOG("In Xml::addChildNode, xmlNewNode() error");
+    if (NULL == childNode) {
+        fprintf(stderr, "[ERROR] In Xml::addChildNode, xmlNewNode() error\n");
         return NULL;
     }
 
-    return xmlAddChild(pParentNode, pChildNode);
+    return xmlAddChild(parentNode, childNode);
 }
 
-xmlNode *
-Xml::addChildNode(xmlNode *pParentNode, xmlNode *pChildNode)
+XmlNode *
+Xml::addChildNode(XmlNode *parentNode, XmlNode *childNode)
 {
-    if (NULL == pParentNode) {
-        FATAL_LOG("In Xml::addChildNode, pParentNode == NULL");
+    if (NULL == parentNode) {
+        fprintf(stderr, "[ERROR] In Xml::addChildNode, "
+                "parentNode == NULL\n");
         return NULL;
     }
 
-    if (NULL == pChildNode) {
-        FATAL_LOG("In Xml::addChildNode, pChildNode == NULL");
+    if (NULL == childNode) {
+        fprintf(stderr, "[ERROR] In Xml::addChildNode, childNode == NULL\n");
         return NULL;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::addChildNode, m_pDoc == NULL");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::addChildNode, _doc == NULL\n");
         return NULL;
     }
 
-    return xmlAddChild(pParentNode, pChildNode);
+    return xmlAddChild(parentNode, childNode);
 }
 
 
-xmlNode *
-Xml::getNodeByXPath(xmlNode *pCurNode, const std::string &xpath)
+XmlNode *
+Xml::getNodeByXPath(XmlNode *curNode, const std::string &xpath) const
 {
-    // 允许pCurNode == NULL
-    //if (NULL == pCurNode) {
-    //FATAL_LOG("In Xml::getNodeByXPath, pCurNode == NULL");
-    //return NULL;
-    //}
+    // curNode can be NULL, that means xpath is relative to root node
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::getNodeByXPath, m_pDoc == NULL");
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, _doc == NULL\n");
         return NULL;
     }
 
-    // 初始化XPath上下文
-    xmlXPathContext *pContext = xmlXPathNewContext(m_pDoc);
+    // init XPath context
+    xmlXPathContext *context = xmlXPathNewContext(_doc);
 
-    if (NULL == pContext) {
-        ERROR_LOG("In Xml::getNodeByXPath, xmlXPathNewContext() error");
+    if (NULL == context) {
+        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, "
+                "xmlXPathNewContext() error\n");
         return NULL;
     }
 
-    // 设置当前节点
-    if (NULL != pCurNode) {
-        pContext->node = pCurNode;
+    // set current node
+    if (NULL != curNode) {
+        context->node = curNode;
     }
 
-    // 解析xpath表达式
+    // parse XPath expression
     xmlXPathObject *pResult = xmlXPathEvalExpression(
-                                  BAD_CAST xpath.c_str(), pContext);
-    // 释放XPath上下文对象
-    xmlXPathFreeContext(pContext);
-    pContext = NULL;
+                                  BAD_CAST xpath.c_str(),
+                                  context
+                              );
+    // release XPath context object
+    xmlXPathFreeContext(context);
+    context = NULL;
 
     if (NULL == pResult) {
-        ERROR_LOG("In Xml::getNodeByXPath, "
-                  "xmlXPathEvalExpression() error");
+        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, "
+                "xmlXPathEvalExpression() error\n");
         return NULL;
     }
 
-    // 解析表达式结果集
+    // parse result set of XPath
     xmlNode *pNode = NULL;
     xmlNodeSet *pNodeSet = pResult->nodesetval;
 
     if (NULL == pNodeSet) {
-        ERROR_LOG("In Xml::getNodeByXPath, pNodeSet == NULL");
+        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, pNodeSet == NULL\n");
         xmlXPathFreeObject(pResult);
 
         return NULL;
@@ -527,132 +577,172 @@ Xml::getNodeByXPath(xmlNode *pCurNode, const std::string &xpath)
         pNode = pNodeSet->nodeTab[0];
 
     } else {
-        ERROR_LOG("In Xml::getNodeByXPath, no path '%s' found",
-                  xpath.c_str());
+        fprintf(stderr,
+                "[ERROR] In Xml::getNodeByXPath, no path '%s' found\n",
+                xpath.c_str());
     }
 
-    // 释放XPath表达式计算结果对象
+    // release result set object of xpath
     xmlXPathFreeObject(pResult);
     pResult = NULL;
 
     return pNode;
 }
 
-xmlNode *
-Xml::getNodeByXPath(const std::string &xpath)
+XmlNode *
+Xml::getNodeByXPath(const std::string &xpath) const
 {
     return getNodeByXPath(NULL, xpath);
 }
 
-int
-Xml::getNodesByXPath(xmlNode *pCurNode, const std::string &xpath,
-                     std::list<xmlNode *> *pNodeList)
+bool
+Xml::getNodesByXPath(
+    XmlNode *curNode,
+    const std::string &xpath,
+    std::list<XmlNode *> *nodeList
+) const
 {
-    // 允许pCurNode == NULL
+    // curNode can be NULL
 
-    if (NULL == pNodeList) {
-        FATAL_LOG("In Xml::getNodesByXPath, pNodeList == NULL");
-        return -1;
+    if (NULL == nodeList) {
+        fprintf(stderr, "[ERROR] In Xml::getNodesByXPath, "
+                "nodeList == NULL\n");
+        return false;
     }
 
-    if (NULL == m_pDoc) {
-        ERROR_LOG("In Xml::getNodesByXPath, m_pDoc == NULL");
-        return -1;
+    if (NULL == _doc) {
+        fprintf(stderr, "[ERROR] In Xml::getNodesByXPath, _doc == NULL\n");
+        return false;
     }
 
-    // 初始化XPath上下文
-    xmlXPathContext *pContext = xmlXPathNewContext(m_pDoc);
+    // init xpath context
+    xmlXPathContext *context = xmlXPathNewContext(_doc);
 
-    if (NULL == pContext) {
-        ERROR_LOG("In Xml::getNodeByXPath, xmlXPathNewContext() error");
-        return NULL;
+    if (NULL == context) {
+        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, "
+                "xmlXPathNewContext() error\n");
+        return false;
     }
 
-    // 设置当前节点
-    if (NULL != pCurNode) {
-        pContext->node = pCurNode;
+    // set current node
+    if (NULL != curNode) {
+        context->node = curNode;
     }
 
-    // 解析xpath表达式
+    // parse xpath expression
     xmlXPathObject *pResult = xmlXPathEvalExpression(
-                                  BAD_CAST xpath.c_str(), pContext);
-    // 释放XPath上下文对象
-    xmlXPathFreeContext(pContext);
-    pContext = NULL;
+                                  BAD_CAST xpath.c_str(),
+                                  context);
+    // release context
+    xmlXPathFreeContext(context);
+    context = NULL;
 
     if (NULL == pResult) {
-        ERROR_LOG("In Xml::getNodeByXPath, "
-                  "xmlXPathEvalExpression() error");
-        return NULL;
+        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, "
+                "xmlXPathEvalExpression() error\n");
+        return false;
     }
 
-    // 解析表达式结果集
+    // parse result set
     xmlNode *pNode = NULL;
     xmlNodeSet *pNodeSet = pResult->nodesetval;
 
     if (NULL == pNodeSet) {
-        ERROR_LOG("In Xml::getNodeByXPath, pNodeSet == NULL");
+        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, pNodeSet == NULL\n");
         xmlXPathFreeObject(pResult);
 
-        return NULL;
+        return false;
     }
 
     for (int i = 0; i < pNodeSet->nodeNr; ++i) {
-        pNodeList->push_back(pNodeSet->nodeTab[i]);
+        nodeList->push_back(pNodeSet->nodeTab[i]);
     }
 
+    // release result set
     xmlXPathFreeObject(pResult);
 
-    return 0;
+    return true;
 }
 
-int
-Xml::getNodesByXPath(const std::string &xpath,
-                     std::list<xmlNode *> *pNodeList)
+bool
+Xml::getNodesByXPath(
+    const std::string &xpath,
+    std::list<XmlNode *> *nodeList
+) const
 {
-    return getNodesByXPath(NULL, xpath, pNodeList);
+    return getNodesByXPath(NULL, xpath, nodeList);
 }
 
-int
-Xml::getNodeValueByXPath(const std::string &xpath, std::string *pValue)
+std::string
+Xml::getNodeValueByXPath(const std::string &xpath) const
+{
+    std::string value;
+
+    if (getNodeValueByXPath(xpath, &value)) {
+        return value;
+    }
+
+    return "";
+}
+
+bool
+Xml::getNodeValueByXPath(const std::string &xpath, std::string *pValue) const
 {
     if (NULL == pValue) {
-        FATAL_LOG("In Xml::getNodeValueByXPath, pValue == NULL");
-        return -1;
+        fprintf(stderr, "[ERROR] In Xml::getNodeValueByXPath, "
+                "pValue == NULL\n");
+        return false;
     }
 
     xmlNode *pNode = getNodeByXPath(xpath);
 
     if (NULL == pNode) {
-        ERROR_LOG("In Xml::getNodeValueByXPath, getNodeByXPath() error");
-        return -1;
+        fprintf(stderr, "[ERROR] In Xml::getNodeValueByXPath, "
+                "getNodeByXPath() error\n");
+        return false;
     }
 
     return getNodeValue(pNode, pValue);
 }
 
-int
-Xml::getNodeValueByXPath(xmlNode *pCurNode, const std::string &xpath,
-                         std::string *pValue)
+std::string
+Xml::getNodeValueByXPath(XmlNode *curNode, const std::string &xpath) const
 {
-    // 允许pCurNode == NULL
-    //if (NULL == pCurNode) {
-    //FATAL_LOG("In Xml::getNodeValueByXPath, pCurNode == NULL");
-    //return -1;
-    //}
+    std::string value;
+
+    if (getNodeValueByXPath(curNode, xpath, &value)) {
+        return value;
+    }
+
+    return "";
+}
+
+bool
+Xml::getNodeValueByXPath(
+    XmlNode *curNode,
+    const std::string &xpath,
+    std::string *pValue
+) const
+{
+    // curNode can be NULL
 
     if (NULL == pValue) {
-        FATAL_LOG("In Xml::getNodeValueByXPath, pValue == NULL");
-        return -1;
+        fprintf(stderr, "[ERROR] In Xml::getNodeValueByXPath,"
+                " pValue == NULL\n");
+        return false;
     }
 
-    xmlNode *pNode = getNodeByXPath(pCurNode, xpath);
+    xmlNode *pNode = getNodeByXPath(curNode, xpath);
 
     if (NULL == pNode) {
-        ERROR_LOG("In Xml::getNodeValueByXPath, getNodeByXPath() error");
-        return -1;
+        fprintf(stderr, "[ERROR] In Xml::getNodeValueByXPath, "
+                "getNodeByXPath() error\n");
+        return false;
     }
 
     return getNodeValue(pNode, pValue);
 }
+
+}
+
 

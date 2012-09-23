@@ -44,31 +44,31 @@ public:
     /**
      * @brief Load xml document from memory area.
      *
-     * @param pBuf Buffer containing xml document.
+     * @param buf Buffer containing xml document.
      * @param size Buffer length.
      *
      * @return Root node fo xml document. NULL if failed.
      */
-    XmlNode *loadMemory(const char *pBuf, int size);
+    XmlNode *loadMemory(const char *buf, int size);
 
     /**
      * @brief Dump current node and all its descendant to specified buffer.
      *
-     * @param pCurNode  Current node.
-     * @param pBuf [out]  Buffer to store xml document.
+     * @param curNode  Current node.
+     * @param buf [out]  Buffer to store xml document.
      *
-     * @return 0 if a success, or -1
+     * @return
      */
-    int saveToBuffer(XmlNode *pCurNode, std::string *pBuf) const;
+    bool saveToBuffer(XmlNode *curNode, std::string *buf) const;
 
     /**
      * @brief Dump the whole xml document to specified buffer.
      *
-     * @param pBuf [out] Buffer to store xml document.
+     * @param buf [out] Buffer to store xml document.
      *
-     * @return 0 if a success, or -1
+     * @return
      */
-    int saveToBuffer(std::string *pBuf) const;
+    bool saveToBuffer(std::string *buf) const;
 
     /**
      * @brief Save the whole xml document to specified disk file.
@@ -77,7 +77,7 @@ public:
      *
      * @return 0 if a success, or -1
      */
-    int saveToFile(const std::string &file) const;
+    bool saveToFile(const std::string &file) const;
 
     /**
      * @brief Create a new xml document in memory from scratch.
@@ -98,34 +98,34 @@ public:
     /**
      * @brief Get parent node of current node.
      *
-     * @param pCurNode Current node.
+     * @param curNode Current node.
      *
      * @return Parent node, NULL if failed.
      */
-    XmlNode *getParentNode(XmlNode *pCurNode) const;
+    XmlNode *getParentNode(XmlNode *curNode) const;
 
     /**
      * @brief Get first child of current node.
      *        Note: Comment, Newline or Indent in xml document may be parsed
      *              as a node. So result of this method may be confused.
      *
-     * @param pCurNode Current node.
+     * @param curNode Current node.
      *
      * @return First child node, NULL if failed.
      */
-    XmlNode *getChildNode(XmlNode *pCurNode) const;
+    XmlNode *getChildNode(XmlNode *curNode) const;
 
     /**
      * @brief Get all children of current node.
      *
-     * @param pCurNode Current node.
-     * @param pNodeList [out] Child nodes list.
+     * @param curNode Current node.
+     * @param nodeList [out] Child nodes list.
      *
-     * @return 0 if a success, or -1
+     * @return
      */
-    int getChildNodes(
-        XmlNode *pCurNode,
-        std::list<XmlNode *> *pNodeList
+    bool getChildNodes(
+        XmlNode *curNode,
+        std::list<XmlNode *> *nodeList
     ) const;
 
     /**
@@ -133,75 +133,83 @@ public:
      *          if there are several nodes have the name "nodeName",
      *          return the first one.
      *
-     * @param pCurNode Current node.
+     * @param curNode Current node.
      * @param nodeName Name of child node.
      *
      * @return First child node named "nodeName", NULL if failed.
      */
     XmlNode *getChildNodeByNodeName(
-        XmlNode *pCurNode,
+        XmlNode *curNode,
         const std::string &nodeName
     ) const;
 
     /**
      * @brief Get all children of current node whose name is "nodeName".
      *
-     * @param pCurNode Current node.
+     * @param curNode Current node.
      * @param nodeName Name of child node.
-     * @param pNodeList [out] Child nodes list.
+     * @param nodeList [out] Child nodes list.
      *
-     * @return 0 if a success, or -1
+     * @return
      */
-    int getChildNodesByNodeName(
-        XmlNode *pCurNode,
+    bool getChildNodesByNodeName(
+        XmlNode *curNode,
         const std::string &nodeName,
-        std::list<XmlNode *> *pNodeList
+        std::list<XmlNode *> *nodeList
     ) const;
 
     /**
      * @brief Get node value of a specified child of current node.
      *
-     * @param pCurNode Current node.
+     * @param curNode Current node.
      * @param childNodeName Child node name.
      *
      * @return node value, empty if failed or node value is empty itself.
      */
     std::string getChildNodeValueByNodeName(
-        XmlNode *pCurNode,
+        XmlNode *curNode,
         const std::string &childNodeName
+    ) const;
+
+    bool getChildNodeValueByNodeName(
+        XmlNode *curNode,
+        const std::string &childName,
+        std::string *value
     ) const;
 
     /**
      * @brief Get node value.
      *
-     * @param pCurNode
+     * @param curNode
      *
      * @return node value, empty if failed or node value is empty itself.
      */
-    std::string getNodeValue(XmlNode *pCurNode) const;
+    std::string getNodeValue(XmlNode *curNode) const;
+
+    bool getNodeValue(XmlNode *curNode, std::string *value) const;
 
     /**
      * @brief Set current node value.
      *
-     * @param pCurNode
+     * @param curNode
      * @param value
      *
      * @return
      */
-    int setNodeValue(XmlNode *pCurNode, const std::string &value);
+    bool setNodeValue(XmlNode *curNode, const std::string &value);
 
     /**
      * @brief Add a child node to "pParentNode", whose name is "nodeName"
      *          and value is "nodeValue".
      *
-     * @param pParentNode
+     * @param parentNode
      * @param nodeName
      * @param nodeValue
      *
      * @return
      */
     XmlNode *addChildNode(
-        XmlNode *pParentNode,
+        XmlNode *parentNode,
         const std::string &nodeName,
         const std::string &nodeValue
     );
@@ -209,25 +217,25 @@ public:
     /**
      * @brief Add a child node named "nodeName" to "pParentNode".
      *
-     * @param pParentNode
+     * @param parentNode
      * @param nodeName
      *
      * @return
      */
     XmlNode *addChildNode(
-        XmlNode *pParentNode,
+        XmlNode *parentNode,
         const std::string &nodeName
     );
 
     /**
      * @brief Add node "pChildNode" to "pParentNode" as its children.
      *
-     * @param pParentNode
-     * @param pChildNode
+     * @param parentNode
+     * @param childNode
      *
      * @return
      */
-    XmlNode *addChildNode(XmlNode *pParentNode, XmlNode *pChildNode);
+    XmlNode *addChildNode(XmlNode *parentNode, XmlNode *childNode);
 
     /**
      * @brief Query a node by XPath.
@@ -241,13 +249,13 @@ public:
     /**
      * @brief Query a node by XPath using relative path.
      *
-     * @param pCurNode
+     * @param curNode
      * @param xpath
      *
      * @return
      */
     XmlNode *getNodeByXPath(
-        XmlNode *pCurNode,
+        XmlNode *curNode,
         const std::string &xpath
     ) const;
 
@@ -255,26 +263,25 @@ public:
      * @brief Query several nodes by XPath expression.
      *
      * @param xpath
-     * @param pNodeList [out]
+     * @param nodeList [out]
      *
-     * @return 0 if a success, or -1
+     * @return
      */
-    int getNodesByXPath(
+    bool getNodesByXPath(
         const std::string &xpath,
-        std::list<XmlNode *> *pNodeList
+        std::list<XmlNode *> *nodeList
     ) const;
 
-    int getNodesByXPath(
-        XmlNode *pCurNode,
+    bool getNodesByXPath(
+        XmlNode *curNode,
         const std::string &xpath,
-        std::list<XmlNode *> *pNodeList
+        std::list<XmlNode *> *nodeList
     ) const;
 
     /**
      * @brief Query node value by XPath.
      *
      * @param xpath
-     * @param pValue [out]
      *
      * @return node value, empty if failed or node value is empty itself
      */
@@ -282,13 +289,32 @@ public:
         const std::string &xpath
     ) const;
 
+    bool getNodeValueByXPath(
+        const std::string &xpath,
+        std::string *value
+    ) const;
+
+    /**
+     * @brief Query node value by relative XPath.
+     *
+     * @param curNode current node
+     * @param xpath xpath expression relative to current node
+     *
+     * @return
+     */
     std::string getNodeValueByXPath(
-        XmlNode *pCurNode,
+        XmlNode *curNode,
         const std::string &xpath
     ) const;
 
+    bool getNodeValueByXPath(
+        XmlNode *curNode,
+        const std::string &xpath,
+        std::string *value
+    ) const;
+
 private:
-    xmlDoc *_pDoc;
+    xmlDoc *_doc;
 };
 
 }  // namespace ossfs
