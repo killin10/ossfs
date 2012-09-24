@@ -365,7 +365,7 @@ bool
 Xml::getChildNodeValueByNodeName(
     XmlNode *curNode,
     const std::string &childNodeName,
-    std::string *pValue
+    std::string *value
 ) const
 {
     if (NULL == curNode) {
@@ -374,9 +374,9 @@ Xml::getChildNodeValueByNodeName(
         return false;
     }
 
-    if (NULL == pValue) {
+    if (NULL == value) {
         fprintf(stderr, "[ERROR] In Xml::getChildNodeValueByNodeName, "
-                "pValue == NULL\n");
+                "value == NULL\n");
         return false;
     }
 
@@ -388,7 +388,7 @@ Xml::getChildNodeValueByNodeName(
         return false;
     }
 
-    return getNodeValue(childNode, pValue);
+    return getNodeValue(childNode, value);
 }
 
 std::string
@@ -404,15 +404,15 @@ Xml::getNodeValue(XmlNode *curNode) const
 }
 
 bool
-Xml::getNodeValue(XmlNode *curNode, std::string *pValue) const
+Xml::getNodeValue(XmlNode *curNode, std::string *value) const
 {
     if (NULL == curNode) {
         fprintf(stderr, "[ERROR] In Xml::getNodeValue, curNode == NULL\n");
         return false;
     }
 
-    if (NULL == pValue) {
-        fprintf(stderr, "[ERROR] In Xml::getNodeValue, pValue == NULL\n");
+    if (NULL == value) {
+        fprintf(stderr, "[ERROR] In Xml::getNodeValue, value == NULL\n");
         return false;
     }
 
@@ -429,7 +429,7 @@ Xml::getNodeValue(XmlNode *curNode, std::string *pValue) const
         return false;
     }
 
-    *pValue = (const char *) pXmlValue;
+    *value = (const char *) pXmlValue;
     xmlFree(pXmlValue);
 
     return 0;
@@ -563,18 +563,18 @@ Xml::getNodeByXPath(XmlNode *curNode, const std::string &xpath) const
     }
 
     // parse result set of XPath
-    xmlNode *pNode = NULL;
-    xmlNodeSet *pNodeSet = pResult->nodesetval;
+    xmlNode *node = NULL;
+    xmlNodeSet *nodeSet = pResult->nodesetval;
 
-    if (NULL == pNodeSet) {
-        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, pNodeSet == NULL\n");
+    if (NULL == nodeSet) {
+        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, nodeSet == NULL\n");
         xmlXPathFreeObject(pResult);
 
         return NULL;
     }
 
-    if (pNodeSet->nodeNr >= 1) {
-        pNode = pNodeSet->nodeTab[0];
+    if (nodeSet->nodeNr >= 1) {
+        node = nodeSet->nodeTab[0];
 
     } else {
         fprintf(stderr,
@@ -586,7 +586,7 @@ Xml::getNodeByXPath(XmlNode *curNode, const std::string &xpath) const
     xmlXPathFreeObject(pResult);
     pResult = NULL;
 
-    return pNode;
+    return node;
 }
 
 XmlNode *
@@ -644,18 +644,18 @@ Xml::getNodesByXPath(
     }
 
     // parse result set
-    xmlNode *pNode = NULL;
-    xmlNodeSet *pNodeSet = pResult->nodesetval;
+    xmlNode *node = NULL;
+    xmlNodeSet *nodeSet = pResult->nodesetval;
 
-    if (NULL == pNodeSet) {
-        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, pNodeSet == NULL\n");
+    if (NULL == nodeSet) {
+        fprintf(stderr, "[ERROR] In Xml::getNodeByXPath, nodeSet == NULL\n");
         xmlXPathFreeObject(pResult);
 
         return false;
     }
 
-    for (int i = 0; i < pNodeSet->nodeNr; ++i) {
-        nodeList->push_back(pNodeSet->nodeTab[i]);
+    for (int i = 0; i < nodeSet->nodeNr; ++i) {
+        nodeList->push_back(nodeSet->nodeTab[i]);
     }
 
     // release result set
@@ -686,23 +686,23 @@ Xml::getNodeValueByXPath(const std::string &xpath) const
 }
 
 bool
-Xml::getNodeValueByXPath(const std::string &xpath, std::string *pValue) const
+Xml::getNodeValueByXPath(const std::string &xpath, std::string *value) const
 {
-    if (NULL == pValue) {
+    if (NULL == value) {
         fprintf(stderr, "[ERROR] In Xml::getNodeValueByXPath, "
-                "pValue == NULL\n");
+                "value == NULL\n");
         return false;
     }
 
-    xmlNode *pNode = getNodeByXPath(xpath);
+    xmlNode *node = getNodeByXPath(xpath);
 
-    if (NULL == pNode) {
+    if (NULL == node) {
         fprintf(stderr, "[ERROR] In Xml::getNodeValueByXPath, "
                 "getNodeByXPath() error\n");
         return false;
     }
 
-    return getNodeValue(pNode, pValue);
+    return getNodeValue(node, value);
 }
 
 std::string
@@ -721,26 +721,26 @@ bool
 Xml::getNodeValueByXPath(
     XmlNode *curNode,
     const std::string &xpath,
-    std::string *pValue
+    std::string *value
 ) const
 {
     // curNode can be NULL
 
-    if (NULL == pValue) {
+    if (NULL == value) {
         fprintf(stderr, "[ERROR] In Xml::getNodeValueByXPath,"
-                " pValue == NULL\n");
+                " value == NULL\n");
         return false;
     }
 
-    xmlNode *pNode = getNodeByXPath(curNode, xpath);
+    xmlNode *node = getNodeByXPath(curNode, xpath);
 
-    if (NULL == pNode) {
+    if (NULL == node) {
         fprintf(stderr, "[ERROR] In Xml::getNodeValueByXPath, "
                 "getNodeByXPath() error\n");
         return false;
     }
 
-    return getNodeValue(pNode, pValue);
+    return getNodeValue(node, value);
 }
 
 }

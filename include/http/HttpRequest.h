@@ -143,11 +143,11 @@ public:
     /**
      * @brief serialize current http request to data stream
      *
-     * @param pData
+     * @param data
      *
      * @return 
      */
-    bool serializeToString(std::string *pData) const;
+    bool serializeToString(std::string *data) const;
 
 protected:
     std::string _method;

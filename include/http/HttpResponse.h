@@ -29,7 +29,7 @@ public:
 
     bool parseFromString(const std::string &data);
 
-    bool serializeToString(std::string *pData) const;
+    bool serializeToString(std::string *data) const;
 
 protected:
     std::string _version;

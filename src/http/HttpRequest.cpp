@@ -121,10 +121,10 @@ HttpRequest::parseFromString(
 
 bool
 HttpRequest::serializeToString(
-    std::string *pData
+    std::string *data
 ) const
 {
-    if (NULL == pData) {
+    if (NULL == data) {
         return false;
     }
 
@@ -163,9 +163,7 @@ HttpRequest::serializeToString(
 
     // total request
 
-    pData->assign(
-        requestLine + headers + HTTP_CRLF + _body
-    );
+    *data = requestLine + headers + HTTP_CRLF + _body;
 
     return true;
 }
