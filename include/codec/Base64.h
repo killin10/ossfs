@@ -1,5 +1,5 @@
 /*
- * @file Base64Encoder.h
+ * @file Base64.h
  * @brief Base64 algorithm.
  *
  * @version 1.0
@@ -21,23 +21,16 @@ namespace ossfs
 {
 
 
-class Base64Encoder
+class Base64
 {
 public:
-    Base64Encoder();
+    Base64();
 
-    ~Base64Encoder();
+    ~Base64();
 
     static std::string encode(const std::string &data);
 
-    bool init();
-
-    bool update(const std::string &data);
-
-    bool final();
-
-private:
-    EVP_CIPHER_CTX _ctx;
+    static std::string decode(const std::string &data);
 };
 
 
