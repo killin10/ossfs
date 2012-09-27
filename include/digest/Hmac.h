@@ -1,54 +1,63 @@
 /*
- * @file MD5.h
- * @brief MD5 digest algorithm
+ * @file Hmac.h
+ * @brief Hash-based Message Authentication Code.
+ *          Using SHA1 for message digest algorithm.
  *
  * @version 1.0
- * @date Sun Sep 23 16:22:49 2012
+ * @date Tue Sep 25 17:17:08 2012
  *
  * @copyright Copyright (C) 2012 UESTC
  * @author shiwei<shiwei2012@gmail.com>
  */
 
-#ifndef digest_MD5_H_
-#define digest_MD5_H_
+#ifndef digest_Hmac_H_
+#define digest_Hmac_H_
+
 
 #include <string>
 
-#include <openssl/md5.h>
+#include <openssl/hmac.h>
+
 
 namespace ossfs
 {
 
 
-class MD5
+class Hmac
 {
 public:
     static const unsigned int DIGEST_LENGTH;
     static const unsigned int HEX_DIGEST_LENGTH;
 
 public:
-    MD5();
+    Hmac();
 
-    ~MD5();
+    ~Hmac();
 
     /**
-     * @brief get hash value in hex in one call
+     * @brief Get the digest in one call.
      *
+     * @param key
      * @param data
      *
-     * @return hash value in hex, empty if failed
+     * @return
      */
-    static std::string md5(const std::string &data);
+    static std::string hmac(
+        const std::string &key,
+        const std::string &data
+    );
 
     /**
-     * @brief Initialize MD5 context
+     * @brief Initialize hmac context.
+     *
+     * @param key
      *
      * @return 
      */
-    bool init();
+    bool init(const std::string &key);
 
     /**
-     * @brief Transform data for hash value computing.
+     * @brief Add new data in order to compute message digest.
      *
      * @param data
      *
@@ -66,26 +75,26 @@ public:
     /**
      * @brief get raw digest after init, update and final
      *
-     * @return
+     * @return 
      */
     std::string digest() const;
 
     /**
      * @brief get digest in hex format
      *
-     * @return
+     * @return 
      */
     std::string digestHex() const;
 
 private:
-    MD5_CTX _ctx;
+    HMAC_CTX _ctx;
     unsigned char *_md;
 };
-
 
 
 }  // namespace ossfs
 
 
-#endif  // digest_MD5_H_
+#endif  // digest_Hmac_H_
+
 

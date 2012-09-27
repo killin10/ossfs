@@ -11,13 +11,36 @@
 
 #include "digest/MD5.h"
 
+#include <stdio.h>
+
 #include <openssl/md5.h>
 
 namespace ossfs
 {
 
-const int MD5::DIGEST_LENGTH = MD5_DIGEST_LENGTH;
-const int MD5::HEX_DIGEST_LENGTH = DIGEST_LENGTH * 2;
+const unsigned int MD5::DIGEST_LENGTH = MD5_DIGEST_LENGTH;
+const unsigned int MD5::HEX_DIGEST_LENGTH = DIGEST_LENGTH * 2;
+
+
+std::string
+MD5::md5(const std::string &data)
+{
+    MD5 md;
+
+    if (!md.init()) {
+        return "";
+    }
+
+    if (!md.update(data)) {
+        return "";
+    }
+
+    if (!md.final()) {
+        return "";
+    }
+
+    return md.digestHex();
+}
 
 MD5::MD5()
 {
@@ -76,13 +99,22 @@ MD5::final()
 std::string
 MD5::digest() const
 {
-    return std::string((char *) _md);
+    return std::string((char *) _md, DIGEST_LENGTH);
 }
 
-std::string 
+std::string
 MD5::digestHex() const
 {
+    // one more byte for null
+    char md[HEX_DIGEST_LENGTH + 1];
 
+    for (int i = 0; i < DIGEST_LENGTH; ++i) {
+        // size is 3, one byte for null
+        snprintf(md + i * 2, 3, "%02x", _md[i]);
+        //sprintf(md + i * 2, "%02x", _md[i]);
+    }
+
+    return std::string(md, HEX_DIGEST_LENGTH);
 }
 
 
