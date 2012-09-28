@@ -1,6 +1,6 @@
 /*
  * @file Base64.cpp
- * @brief
+ * @brief Base64 algorithm.
  *
  * @version 1.0
  * @date Thu Sep 27 15:07:07 2012
@@ -18,6 +18,8 @@
 
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
+
+#define BASE64_READ_BUFFER_LEN  512
 
 namespace ossfs
 {
@@ -96,16 +98,40 @@ Base64::decode(const std::string &data)
     BIO *bmem = NULL;
 
     b64 = BIO_new(BIO_f_base64());
+
+    if (NULL == b64) {
+        fprintf(stderr, "BIO_new error\n");
+        return "";
+    }
+
     bmem = BIO_new_mem_buf(const_cast<char *>(data.c_str()), data.length());
+
+    if (NULL == bmem) {
+        fprintf(stderr, "BIO_new_mem_buf error\n");
+        return "";
+    }
 
     bmem = BIO_push(b64, bmem);
 
     std::string decoded;
-    char de[512];
+    char de[BASE64_READ_BUFFER_LEN];
 
-    len = BIO_read(bmem, de, 512);
+    for (; ;) {
+        len = BIO_read(bmem, de, BASE64_READ_BUFFER_LEN);
 
-    decoded.append(de, len);
+        if (len < 0) {
+            fprintf(stderr, "BIO_read error\n");
+
+            BIO_free_all(bmem);
+            return "";
+        }
+
+        if (0 == len) {
+            break;
+        }
+
+        decoded.append(de, len);
+    }
 
     BIO_free_all(bmem);
 
