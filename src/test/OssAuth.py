@@ -10,5 +10,4 @@ h = hmac.new("OtxrzxIsfpFjA7SwPzILwy8Bw21TLhquhboDYROV",
 # print h.digest().strip()
 print h.digest()
 
-#print base64.encodestring(h.digest()).strip()
-print base64.encodestring(h.digest())
+print base64.encodestring(h.digest()).strip()

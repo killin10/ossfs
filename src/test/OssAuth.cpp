@@ -12,6 +12,7 @@
 #include "digest/MD5.h"
 #include "digest/Hmac.h"
 #include "codec/Base64.h"
+#include "util/util.h"
 
 #include <string>
 #include <iostream>
@@ -29,7 +30,7 @@ main(int argc, char *argv[])
 
     std::string base64 = ossfs::Base64::encode(hmac);
 
-    std::cout << base64 << std::endl;
+    std::cout << ossfs::util::trim(base64) << std::endl;
 
     return 0;
 }
