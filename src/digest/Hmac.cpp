@@ -40,7 +40,7 @@ Hmac::hmac(const std::string &key, const std::string &data)
         return "";
     }
 
-    return hmac.digestHex();
+    return hmac.digest();
 }
 
 Hmac::Hmac()
@@ -109,7 +109,7 @@ Hmac::final()
 std::string
 Hmac::digest() const
 {
-    return std::string((char *) _md);
+    return std::string((char *) _md, DIGEST_LENGTH);
 }
 
 std::string

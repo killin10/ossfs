@@ -39,7 +39,7 @@ MD5::md5(const std::string &data)
         return "";
     }
 
-    return md.digestHex();
+    return md.digest();
 }
 
 MD5::MD5()
