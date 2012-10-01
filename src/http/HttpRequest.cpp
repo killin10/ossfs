@@ -23,8 +23,8 @@ namespace ossfs
 
 // method
 const std::string HttpRequest::OPTIONS = "OPTIONS";
-const std::string HttpRequest::HEAD = "HEAD";
 const std::string HttpRequest::GET = "GET";
+const std::string HttpRequest::HEAD = "HEAD";
 const std::string HttpRequest::POST = "POST";
 const std::string HttpRequest::PUT = "PUT";
 const std::string HttpRequest::DELETE = "DELETE";
