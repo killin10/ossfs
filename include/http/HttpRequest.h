@@ -25,8 +25,8 @@ class HttpRequest
 public:
     // method
     static const std::string OPTIONS;
-    static const std::string HEAD;
     static const std::string GET;
+    static const std::string HEAD;
     static const std::string POST;
     static const std::string PUT;
     static const std::string DELETE;
