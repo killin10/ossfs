@@ -64,24 +64,123 @@ public:
     static const int SC_GATEWAY_TIMEOUT;
     static const int SC_HTTP_VERSION_NOT_SUPPORTED;
 
+    static const std::map<int, std::string> REASON_PHRASES;
+
 public:
     HttpResponse();
 
     virtual ~HttpResponse();
 
+    inline void setVersion(const std::string &version);
+
+    inline std::string getVersion() const;
+
+    inline void setStatusCode(int sc);
+
+    inline int getStatusCode() const;
+
+    inline void setReasonPhrase(const std::string &rp);
+
+    inline std::string getReasonPhrase() const;
+
+    bool hasHeader(const std::string &name) const;
+
+    void setHeader(const std::string &name, const std::string &value);
+
+    std::string getHeader(const std::string &name) const;
+
+    inline void setBody(const std::string &body);
+
+    inline void setBody(const char *buf, int len);
+
+    inline void appendBody(const std::string &data);
+
+    inline void appendBody(const char *buf, int len);
+
+    inline const std::string &getBody() const;
+
     bool parseFromString(const std::string &data);
+
+    bool parseFromBuffer(const char *buf, int len);
 
     bool serializeToString(std::string *data) const;
 
 protected:
     std::string _version;
-    std::string _statusCode;
+    int _statusCode;
     std::string _reasonPhrase;
 
     std::map<std::string, std::string> _headers;
 
     std::string _body;
 };
+
+
+void
+HttpResponse::setVersion(const std::string &version)
+{
+    _version = version;
+}
+
+std::string
+HttpResponse::getVersion() const
+{
+    return _version;
+}
+
+void
+HttpResponse::setStatusCode(int sc)
+{
+    _statusCode = sc;
+}
+
+int
+HttpResponse::getStatusCode() const
+{
+    return _statusCode;
+}
+
+void
+HttpResponse::setReasonPhrase(const std::string &rp)
+{
+    _reasonPhrase = rp;
+}
+
+std::string
+HttpResponse::getReasonPhrase() const
+{
+    return _reasonPhrase;
+}
+
+void
+HttpResponse::setBody(const std::string &body)
+{
+    _body = body;
+}
+
+void
+HttpResponse::setBody(const char *buf, int len)
+{
+    _body.assign(buf, len);
+}
+
+void
+HttpResponse::appendBody(const std::string &data)
+{
+    _body.append(data);
+}
+
+void
+HttpResponse::appendBody(const char *buf, int len)
+{
+    _body.append(buf, len);
+}
+
+const std::string &
+HttpResponse::getBody() const
+{
+    return _body;
+}
 
 
 }
