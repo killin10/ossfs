@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "Logger.h"
+#include "log/Logger.h"
 
 #include <cstddef>
 #include <cstdarg>
@@ -24,8 +24,12 @@
 #include <list>
 #include <string>
 
-#include "Appender.h"
-#include "LogLevel.h"
+#include "log/Appender.h"
+#include "log/LogLevel.h"
+
+namespace ossfs
+{
+
 
 Logger::Logger()
     : m_Level(LOG_DEBUG)
@@ -162,4 +166,8 @@ void Logger::trace(
         va_end(ap);
     }
 }
+
+
+}  // namespace ossfs
+
 

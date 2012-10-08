@@ -33,9 +33,6 @@ public:
     static const std::string TRACE;
     static const std::string CONNECT;
 
-    // version
-    static const std::string HTTP_VERSION_11;
-
 public:
     HttpRequest();
 

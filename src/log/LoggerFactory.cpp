@@ -10,7 +10,7 @@
  * @author shiwei<shiwei2012@gmail.com>
  */
 
-#include "LoggerFactory.h"
+#include "log/LoggerFactory.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -18,8 +18,8 @@
 #include <string>
 #include <utility>
 
-#include "LogLevel.h"
-#include "ConsoleAppender.h"
+#include "log/LogLevel.h"
+#include "log/ConsoleAppender.h"
 
 namespace ossfs
 {

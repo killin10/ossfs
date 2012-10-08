@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "Appender.h"
+#include "log/Appender.h"
 
 #include <cstdio>
 
@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include "LogLevel.h"
+#include "log/LogLevel.h"
 
 
 namespace ossfs

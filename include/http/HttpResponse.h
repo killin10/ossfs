@@ -99,6 +99,12 @@ public:
 
     inline const std::string &getBody() const;
 
+    bool parseStatusLine(const std::string &sl);
+
+    bool parseNameValuePair(const std::string &pair);
+
+    bool parseHeaderFromString(const std::string &header);
+
     bool parseFromString(const std::string &data);
 
     bool parseFromBuffer(const char *buf, int len);

@@ -17,6 +17,7 @@
 #include "HttpMacros.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
+#include "HttpConnection.h"
 
 
 #endif  // http_http_H_

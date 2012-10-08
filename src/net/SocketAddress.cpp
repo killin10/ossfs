@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include "log/log.h"
 
@@ -54,7 +55,7 @@ SocketAddress::setAddress(const struct sockaddr_in &sa)
     char str[INET_ADDRSTRLEN];
 
     const char *dst = NULL;
-    dst = inet_ntop(AF_INET, &(sa.sin_addr), str, sizeof(struct in_addr));
+    dst = inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN);
 
     if (NULL == dst) {
         ERROR_LOG("inet_ntop error, %s", strerror(errno));

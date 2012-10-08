@@ -39,6 +39,12 @@
 #define HTTP_PARAM_SEPARATOR_CHR            '&'
 #define HTTP_PARAM_SEPARATOR_STR            "&"
 
+// version
+#define HTTP_VERSION_11                     "HTTP/1.1"
+
+// header name
+#define HTTP_CONTENT_LENGTH         "Content-Length"
+
 
 #endif  // http_HttpMacros_H_
 

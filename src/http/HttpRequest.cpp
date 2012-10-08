@@ -31,9 +31,6 @@ const std::string HttpRequest::DELETE = "DELETE";
 const std::string HttpRequest::TRACE = "TRACE";
 const std::string HttpRequest::CONNECT = "CONNECT";
 
-// version
-const std::string HTTP_VERSION_11 = "HTTP/1.1";
-
 
 HttpRequest::HttpRequest()
 {

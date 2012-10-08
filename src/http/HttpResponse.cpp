@@ -11,8 +11,15 @@
 
 #include "http/HttpResponse.h"
 
+#include <string.h>
+
 #include <string>
 #include <map>
+
+#include "http/HttpMacros.h"
+
+#include "log/log.h"
+#include "util/util.h"
 
 
 namespace ossfs
@@ -60,48 +67,62 @@ const int HttpResponse::SC_SERVICE_UNAVAILABLE = 503;
 const int HttpResponse::SC_GATEWAY_TIMEOUT = 504;
 const int HttpResponse::SC_HTTP_VERSION_NOT_SUPPORTED = 505;
 
-const std::map<int, std::string> HttpResponse::REASON_PHRASES = {
-    {100, "Continue"},
-    {101, "Switching Protocols"},
-    {200, "OK"},
-    {201, "Created"},
-    {202, "Accepted"},
-    {203, "Non-Authoritative Information"},
-    {204, "No Content"},
-    {205, "Reset Content"},
-    {206, "Partial Content"},
-    {300, "Multiple Choices"},
-    {301, "Moved Permanently"},
-    {302, "Found"},
-    {303, "See Other"},
-    {304, "Not Modified"},
-    {305, "Use Proxy"},
-    {307, "Temporary Redirect"},
-    {400, "Bad Request"},
-    {401, "Unauthorized"},
-    {402, "Payment Required"},
-    {403, "Forbidden"},
-    {404, "Not Found"},
-    {405, "Method Not Allowed"},
-    {406, "Not Acceptable"},
-    {407, "Proxy Authentication Required"},
-    {408, "Request Timeout"},
-    {409, "Conflict"},
-    {410, "Gone"},
-    {411, "Length Required"},
-    {412, "Precondition Failed"},
-    {413, "Request Entity Too Large"},
-    {414, "Request-URI Too Long"},
-    {415, "Unsupported Media Type"},
-    {416, "Requested Range Not Satisfiable"},
-    {417, "Expectation Failed"},
-    {500, "Internal Server Error"},
-    {501, "Not Implemented"},
-    {502, "Bad Gateway"},
-    {503, "Service Unavailable"},
-    {504, "Gateway Timeout"},
-    {505, "HTTP Version Not Supported"}
+
+static std::map<int, std::string>::value_type mapInit[] = {
+    std::map<int, std::string>::value_type(100, "Continue"),
+    std::map<int, std::string>::value_type(101, "Switching Protocols"),
+    std::map<int, std::string>::value_type(200, "OK"),
+    std::map<int, std::string>::value_type(201, "Created"),
+    std::map<int, std::string>::value_type(202, "Accepted"),
+    std::map<int, std::string>::value_type(
+        203,
+        "Non-Authoritative Information"
+    ),
+    std::map<int, std::string>::value_type(204, "No Content"),
+    std::map<int, std::string>::value_type(205, "Reset Content"),
+    std::map<int, std::string>::value_type(206, "Partial Content"),
+    std::map<int, std::string>::value_type(300, "Multiple Choices"),
+    std::map<int, std::string>::value_type(301, "Moved Permanently"),
+    std::map<int, std::string>::value_type(302, "Found"),
+    std::map<int, std::string>::value_type(303, "See Other"),
+    std::map<int, std::string>::value_type(304, "Not Modified"),
+    std::map<int, std::string>::value_type(305, "Use Proxy"),
+    std::map<int, std::string>::value_type(307, "Temporary Redirect"),
+    std::map<int, std::string>::value_type(400, "Bad Request"),
+    std::map<int, std::string>::value_type(401, "Unauthorized"),
+    std::map<int, std::string>::value_type(402, "Payment Required"),
+    std::map<int, std::string>::value_type(403, "Forbidden"),
+    std::map<int, std::string>::value_type(404, "Not Found"),
+    std::map<int, std::string>::value_type(405, "Method Not Allowed"),
+    std::map<int, std::string>::value_type(406, "Not Acceptable"),
+    std::map<int, std::string>::value_type(
+        407,
+        "Proxy Authentication Required"
+    ),
+    std::map<int, std::string>::value_type(408, "Request Timeout"),
+    std::map<int, std::string>::value_type(409, "Conflict"),
+    std::map<int, std::string>::value_type(410, "Gone"),
+    std::map<int, std::string>::value_type(411, "Length Required"),
+    std::map<int, std::string>::value_type(412, "Precondition Failed"),
+    std::map<int, std::string>::value_type(413, "Request Entity Too Large"),
+    std::map<int, std::string>::value_type(414, "Request-URI Too Long"),
+    std::map<int, std::string>::value_type(415, "Unsupported Media Type"),
+    std::map<int, std::string>::value_type(
+        416,
+        "Requested Range Not Satisfiable"
+    ),
+    std::map<int, std::string>::value_type(417, "Expectation Failed"),
+    std::map<int, std::string>::value_type(500, "Internal Server Error"),
+    std::map<int, std::string>::value_type(501, "Not Implemented"),
+    std::map<int, std::string>::value_type(502, "Bad Gateway"),
+    std::map<int, std::string>::value_type(503, "Service Unavailable"),
+    std::map<int, std::string>::value_type(504, "Gateway Timeout"),
+    std::map<int, std::string>::value_type(505, "HTTP Version Not Supported")
 };
+
+const std::map<int, std::string> HttpResponse::REASON_PHRASES(
+    mapInit, mapInit + 40
+);
 
 HttpResponse::HttpResponse()
 {
@@ -140,6 +161,119 @@ HttpResponse::getHeader(const std::string &name) const
     it = _headers.find(name);
 
     return (_headers.end() == it) ? "" : (it->second);
+}
+
+bool
+HttpResponse::parseStatusLine(const std::string &sl)
+{
+    int inLineIdx = 0;
+    int space = 0;
+
+    // protocol version
+    space = sl.find(HTTP_STATUS_LINE_SEPARATOR_STR, inLineIdx);
+
+    if (std::string::npos == space) {
+        ERROR_LOG("parse http version string failed");
+        return false;
+    }
+
+    _version = sl.substr(0, space);
+
+    inLineIdx = space + 1;
+
+    // status code
+    space = sl.find(HTTP_STATUS_LINE_SEPARATOR_STR, inLineIdx);
+
+    if (std::string::npos == space) {
+        ERROR_LOG("parse status code failed");
+        return false;
+    }
+
+    _statusCode = util::conv<int, std::string>(
+                      sl.substr(inLineIdx, space - inLineIdx)
+                  );
+
+    inLineIdx = space + 1;
+
+    // reason phrase
+
+    _reasonPhrase = sl.substr(inLineIdx);
+
+    return true;
+}
+
+bool
+HttpResponse::parseNameValuePair(const std::string &pair)
+{
+    int colon = 0;
+
+    colon = pair.find(HTTP_NAME_VALUE_SEPARATOR_STR);
+
+    if (std::string::npos == colon) {
+        ERROR_LOG("parse http name-value pair failed");
+        return false;
+    }
+
+    std::string name = util::trim(pair.substr(0, colon));
+    std::string value = util::trim(pair.substr(colon + 1));
+
+    _headers[name] = value;
+
+    return true;
+}
+
+
+bool
+HttpResponse::parseHeaderFromString(const std::string &header)
+{
+    int crlf = 0;
+    int idx = 0;
+
+    // status line
+
+    crlf = header.find(HTTP_CRLF, idx);
+
+    if (std::string::npos == crlf) {
+        ERROR_LOG("parse status line from response failed");
+        return false;
+    }
+
+    std::string statusLine = header.substr(idx, crlf - idx);
+
+    if (!parseStatusLine(statusLine)) {
+        ERROR_LOG("parse status line failed");
+        return false;
+    }
+
+    idx = crlf + strlen(HTTP_CRLF);
+
+    // headers
+
+    std::string line;
+
+    for (; ;) {
+        crlf = header.find(HTTP_CRLF, idx);
+
+        if (std::string::npos == crlf) {
+            ERROR_LOG("parse name-value pair from response failed");
+            return false;
+        }
+
+        line = header.substr(idx, crlf - idx);
+
+        if (line.empty()) {
+            break;
+        }
+
+        if (!parseNameValuePair(line)) {
+            ERROR_LOG("parse name-value pair failed");
+            return false;
+        }
+
+        idx = crlf + strlen(HTTP_CRLF);
+    }
+
+    return true;
 }
 
 bool

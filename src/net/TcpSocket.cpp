@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/tcp.h>
 #include <sys/uio.h>
 
 #include "log/log.h"
@@ -32,7 +33,7 @@ TcpSocket::TcpSocket()
     _errno = 0;
 }
 
-TcpSocekt::TcpSocket(int sock)
+TcpSocket::TcpSocket(int sock)
 {
     _sock = sock;
     _errno = 0;
@@ -84,7 +85,7 @@ TcpSocket::setNonblock()
 
     rv = ::fcntl(_sock, F_SETFL, value);
 
-    if (-1 == rt) {
+    if (-1 == rv) {
         _errno = errno;
 
         ERROR_LOG("fcntl(F_SETFL) error, %s", strerror(_errno));
@@ -207,7 +208,7 @@ TcpSocket::bind(const SocketAddress &sa)
         ERROR_LOG("get socket address error, ip %s, port %" PRIu16,
                   sa.getIp().c_str(), sa.getPort());
 
-        retur - 1;
+        return- 1;
     }
 
     rv = ::bind(
@@ -326,7 +327,7 @@ TcpSocket::read(char *buf, int len)
     if (NULL == buf) {
         _errno = 0;
 
-        FATAL_LOG("null pointer")
+        FATAL_LOG("null pointer");
         return -1;
     }
 
@@ -375,7 +376,7 @@ TcpSocket::readn(char *buf, int len)
             return readn;
 
         } else if (0 == rv) {
-            DEBUG_LOG("EOF encountered, remote ip %s, port %" PRIu16
+            DEBUG_LOG("EOF encountered, remote ip %s, port %" PRIu16,
                       _remoteAddr.getIp().c_str(),
                       _remoteAddr.getPort()
                      );

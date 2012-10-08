@@ -21,10 +21,14 @@
 
 #include "http/HttpRequest.h"
 #include "http/HttpResponse.h"
+#include "http/HttpMacros.h"
 #include "net/TcpSocket.h"
 #include "net/SocketAddress.h"
 
 #include "log/log.h"
+#include "util/util.h"
+
+#define HTTP_READ_BUFFER_SIZE   512
 
 namespace ossfs
 {
@@ -76,10 +80,36 @@ HttpConnection::connect()
     }
 
     SocketAddress remote;
-    remote.setAddress((struct sockaddr_in *)(res->ai_addr));
+    remote.setAddress(*((struct sockaddr_in *)(res->ai_addr)));
 
     freeaddrinfo(res);
     res = NULL;
+
+    // create socket
+    rv = _sock.socket();
+
+    if (-1 == rv) {
+        ERROR_LOG("create socket error");
+        return -1;
+    }
+
+    // set options
+
+    rv = _sock.disableNagle();
+
+    if (-1 == rv) {
+        ERROR_LOG("disable Nagle on socket error");
+        return -1;
+    }
+
+    rv = _sock.disableLinger();
+
+    if (-1 == rv) {
+        ERROR_LOG("disable Linger on socket error");
+        return -1;
+    }
+
+    // do connect
 
     return _sock.connect(remote);
 }
@@ -117,6 +147,96 @@ HttpConnection::sendRequest(const HttpRequest &request)
 int
 HttpConnection::recvResponse(HttpResponse *response)
 {
+    if (NULL == response) {
+        FATAL_LOG("null pointer");
+        return -1;
+    }
+
+    // one more byte for null
+    char buf[HTTP_READ_BUFFER_SIZE];
+
+    std::string recvd;
+
+    int rv = 0;
+
+    int readn = 0;
+    int idx = 0;
+    int pos = 0;
+
+    // read http head
+
+    for (; ;) {
+        rv = _sock.read(buf, HTTP_READ_BUFFER_SIZE);
+
+        if (-1 == rv) {
+            if (EINTR == _sock.getErrNo()) {
+                continue;
+            }
+
+            return -1;
+        }
+
+        if (0 == rv) {
+            DEBUG_LOG("http connection closed by %s", _host.c_str());
+            return -1;
+        }
+
+        readn = rv;
+        recvd.append(buf, readn);
+
+        // the whole http head was read?
+
+        pos = recvd.find(HTTP_CRLF HTTP_CRLF);
+
+        if (pos != std::string::npos) {
+            // whole head read
+            break;
+        }
+    }
+
+    idx = pos + strlen(HTTP_CRLF HTTP_CRLF);
+
+    // parse head
+
+    if (!response->parseHeaderFromString(recvd.substr(0, idx))) {
+        ERROR_LOG("parse http packet head failed");
+        return -1;
+    }
+
+    // read content
+    std::string strLen = response->getHeader(HTTP_CONTENT_LENGTH);
+
+    if (strLen.empty()) {
+        return 0;
+    }
+
+    int contentLen = util::conv<int, std::string>(strLen);
+
+    char *content = new char[contentLen];
+
+    // copy content already read in "rcvd" to "content"
+    int read = recvd.length() - idx;
+
+    memcpy(content, recvd.c_str() + idx, read);
+
+    int toread = contentLen - read;
+
+    rv = _sock.readn(content, toread);
+
+    if (rv != toread) {
+        ERROR_LOG("read content failed");
+
+        delete [] content;
+        content = NULL;
+
+        return -1;
+    }
+
+    response->setBody(content, contentLen);
+
+    delete [] content;
+    content = NULL;
+
     return 0;
 }
 

@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "ConsoleAppender.h"
+#include "log/ConsoleAppender.h"
 
 #include <cstdarg>
 #include <cstdio>
@@ -24,7 +24,7 @@
 
 #include <string>
 
-#include "LogLevel.h"
+#include "log/LogLevel.h"
 
 #define LOG_BUFFER_SIZE 6000
 
@@ -80,7 +80,7 @@ void ConsoleAppender::log(
     buffer[len] = '\0';
 
     // 输出到stderr
-    fprintf(stderr, buffer);
+    fprintf(stderr, "%s", buffer);
 }
 
 

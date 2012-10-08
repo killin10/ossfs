@@ -15,9 +15,9 @@
 #include <string.h>
 #include <errno.h>
 
-#include "LogLevel.h"
-#include "Logger.h"
-#include "LoggerFactory.h"
+#include "log/LogLevel.h"
+#include "log/Logger.h"
+#include "log/LoggerFactory.h"
 
 // 使用__VA_ARGS__必须要有可变参数
 //#define DEV_LOG(logger, _fmt_, ...)  \
@@ -31,21 +31,17 @@
     LoggerFactory::getInstance()->getRootLogger()->debug(  \
             __FILE__, __LINE__, __FUNCTION__, _fmt_, ##args)
 
-#define INFO_LOG(_fmt_, args...)   \
-    LoggerFactory::getInstance()->getRootLogger()->info(  \
-            _fmt_, ##args)
+#define INFO_LOG(_fmt_, args...)  \
+    LoggerFactory::getInstance()->getRootLogger()->info(_fmt_, ##args)
 
-#define WARN_LOG(_fmt_, args...)   \
-    LoggerFactory::getInstance()->getRootLogger()->warn(  \
-            _fmt_, ##args)
+#define WARN_LOG(_fmt_, args...)  \
+    LoggerFactory::getInstance()->getRootLogger()->warn(_fmt_, ##args)
 
-#define ERROR_LOG(_fmt_, args...)   \
-    LoggerFactory::getInstance()->getRootLogger()->error(  \
-            _fmt_, ##args)
+#define ERROR_LOG(_fmt_, args...)  \
+    LoggerFactory::getInstance()->getRootLogger()->error(_fmt_, ##args)
 
-#define FATAL_LOG(_fmt_, args...)   \
-    LoggerFactory::getInstance()->getRootLogger()->fatal(  \
-            _fmt_, ##args)
+#define FATAL_LOG(_fmt_, args...)  \
+    LoggerFactory::getInstance()->getRootLogger()->fatal(_fmt_, ##args)
 
 #endif // log_log_H_
 
