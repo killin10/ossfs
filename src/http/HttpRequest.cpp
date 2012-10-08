@@ -16,6 +16,8 @@
 
 #include "http/HttpMacros.h"
 
+#include "util/util.h"
+
 
 namespace ossfs
 {
@@ -40,6 +42,24 @@ HttpRequest::HttpRequest()
 HttpRequest::~HttpRequest()
 {
 
+}
+
+int
+HttpRequest::getContentLength() const
+{
+    std::string strLen = getHeader(HTTP_CONTENT_LENGTH);
+
+    if (strLen.empty()) {
+        return -1;
+    }
+
+    return util::conv<int, std::string>(strLen);
+}
+
+void
+HttpRequest::setContentLength(int len)
+{
+    setHeader(HTTP_CONTENT_LENGTH, util::conv<std::string, int>(len));
 }
 
 bool
@@ -155,6 +175,7 @@ HttpRequest::serializeToString(
     for (std::map<std::string, std::string>::const_iterator it =
              _headers.begin(); it != _headers.end(); ++it) {
         headers += it->first + HTTP_NAME_VALUE_SEPARATOR_STR
+                   + " "
                    + it->second + HTTP_CRLF;
     }
 

@@ -83,6 +83,10 @@ public:
 
     inline std::string getReasonPhrase() const;
 
+    int getContentLength() const;
+
+    void setContentLength(int len);
+
     bool hasHeader(const std::string &name) const;
 
     void setHeader(const std::string &name, const std::string &value);

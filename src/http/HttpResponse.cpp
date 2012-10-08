@@ -134,6 +134,24 @@ HttpResponse::~HttpResponse()
 
 }
 
+int
+HttpResponse::getContentLength() const
+{
+    std::string strLen = getHeader(HTTP_CONTENT_LENGTH);
+
+    if (strLen.empty()) {
+        return -1;
+    }
+
+    return util::conv<int, std::string>(strLen);
+}
+
+void
+HttpResponse::setContentLength(int len)
+{
+    setHeader(HTTP_CONTENT_LENGTH, util::conv<std::string, int>(len));
+}
+
 bool
 HttpResponse::hasHeader(const std::string &name) const
 {

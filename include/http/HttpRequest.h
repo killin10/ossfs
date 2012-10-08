@@ -15,6 +15,7 @@
 #include <map>
 #include <string>
 
+#include "http/HttpMacros.h"
 
 namespace ossfs
 {
@@ -64,6 +65,34 @@ public:
     inline void setVersion(const std::string &version);
 
     inline const std::string &getVersion() const;
+
+    /**
+     * @brief get "Host" header
+     *
+     * @param host
+     */
+    inline void setHost(const std::string &host);
+
+    /**
+     * @brief set "Host" header
+     *
+     * @return 
+     */
+    inline std::string getHost() const;
+
+    /**
+     * @brief get content length
+     *
+     * @return
+     */
+    int getContentLength() const;
+
+    /**
+     * @brief set content length
+     *
+     * @param len
+     */
+    void setContentLength(int len);
 
     /**
      * @brief has parameter "paramName"?
@@ -133,7 +162,7 @@ public:
      *
      * @param data
      *
-     * @return 
+     * @return
      */
     bool parseFromString(const std::string &data);
 
@@ -142,7 +171,7 @@ public:
      *
      * @param data
      *
-     * @return 
+     * @return
      */
     bool serializeToString(std::string *data) const;
 
@@ -192,6 +221,18 @@ const std::string &
 HttpRequest::getVersion() const
 {
     return _version;
+}
+
+void
+HttpRequest::setHost(const std::string &host) 
+{
+    setHeader(HTTP_HOST, host);
+}
+
+std::string
+HttpRequest::getHost() const
+{
+    return getHeader(HTTP_HOST);
 }
 
 void

@@ -38,12 +38,17 @@
 #define HTTP_PARAM_LEADER_STR               "?"
 #define HTTP_PARAM_SEPARATOR_CHR            '&'
 #define HTTP_PARAM_SEPARATOR_STR            "&"
+#define HTTP_PARAM_NV_SEPARATOR_CHR         '='
+#define HTTP_PARAM_NV_SEPARATOR_STR         "="
 
 // version
 #define HTTP_VERSION_11                     "HTTP/1.1"
 
 // header name
 #define HTTP_CONTENT_LENGTH         "Content-Length"
+#define HTTP_DATE                   "Date"
+#define HTTP_AUTHORIZATION          "Authorization"
+#define HTTP_HOST                   "Host"
 
 
 #endif  // http_HttpMacros_H_
