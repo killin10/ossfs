@@ -84,8 +84,81 @@ const std::map<int, std::string> HttpResponse::REASON_PHRASES = {
     {404, "Not Found"},
     {405, "Method Not Allowed"},
     {406, "Not Acceptable"},
-    {407, "Proxy Authentication Required"}
+    {407, "Proxy Authentication Required"},
+    {408, "Request Timeout"},
+    {409, "Conflict"},
+    {410, "Gone"},
+    {411, "Length Required"},
+    {412, "Precondition Failed"},
+    {413, "Request Entity Too Large"},
+    {414, "Request-URI Too Long"},
+    {415, "Unsupported Media Type"},
+    {416, "Requested Range Not Satisfiable"},
+    {417, "Expectation Failed"},
+    {500, "Internal Server Error"},
+    {501, "Not Implemented"},
+    {502, "Bad Gateway"},
+    {503, "Service Unavailable"},
+    {504, "Gateway Timeout"},
+    {505, "HTTP Version Not Supported"}
 };
+
+HttpResponse::HttpResponse()
+{
+    _statusCode = 0;
+}
+
+HttpResponse::~HttpResponse()
+{
+
+}
+
+bool
+HttpResponse::hasHeader(const std::string &name) const
+{
+    std::map<std::string, std::string>::const_iterator it;
+
+    it = _headers.find(name);
+
+    return (_headers.end() == it) ? false : true;
+}
+
+void
+HttpResponse::setHeader(
+    const std::string &name,
+    const std::string &value
+)
+{
+    _headers[name] = value;
+}
+
+std::string
+HttpResponse::getHeader(const std::string &name) const
+{
+    std::map<std::string, std::string>::const_iterator it;
+
+    it = _headers.find(name);
+
+    return (_headers.end() == it) ? "" : (it->second);
+}
+
+bool
+HttpResponse::parseFromString(const std::string &data)
+{
+
+}
+
+bool
+HttpResponse::parseFromBuffer(const char *buf, int len)
+{
+
+}
+
+bool
+HttpResponse::serializeToString(std::string *data) const
+{
+
+}
 
 
 
