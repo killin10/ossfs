@@ -20,7 +20,7 @@ using namespace ossfs;
 
 int main()
 {
-    std::string host = "storage.aliyun.com";
+    std::string host = "www.google.com";
     std::string uri = "/";
 
     HttpRequest req;

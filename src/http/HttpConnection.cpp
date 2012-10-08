@@ -221,7 +221,7 @@ HttpConnection::recvResponse(HttpResponse *response)
 
     int toread = contentLen - read;
 
-    rv = _sock.readn(content, toread);
+    rv = _sock.readn(content + read, toread);
 
     if (rv != toread) {
         ERROR_LOG("read content failed");

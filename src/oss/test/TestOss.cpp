@@ -60,14 +60,7 @@ int main()
               << res.getStatusCode() << " "
               << res.getReasonPhrase() << std::endl;
 
-    std::cout << res.getBody().length() << std::endl;
     std::cout << res.getBody() << std::endl;
-
-    Xml *xml = new Xml();
-
-    xml->loadMemory(res.getBody().c_str(), res.getBody().length());
-
-    xml->saveToFile("a.xml");
 
     conn.close();
 
