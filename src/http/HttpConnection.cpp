@@ -141,6 +141,8 @@ HttpConnection::sendRequest(const HttpRequest &request)
         return -1;
     }
 
+    _method = request.getMethod();
+
     return 0;
 }
 
@@ -201,6 +203,11 @@ HttpConnection::recvResponse(HttpResponse *response)
     if (!response->parseHeaderFromString(recvd.substr(0, idx))) {
         ERROR_LOG("parse http packet head failed");
         return -1;
+    }
+
+    // no content
+    if (HttpRequest::HEAD == _method) {
+        return 0;
     }
 
     // read content

@@ -46,6 +46,7 @@ public:
 private:
     TcpSocket _sock;
     std::string _host;
+    std::string _method;
 };
 
 void

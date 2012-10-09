@@ -14,6 +14,7 @@
 
 #include <string>
 #include <list>
+#include <map>
 
 
 namespace ossfs
@@ -57,9 +58,39 @@ public:
         std::list<std::string> *objects
     );
 
+    /**
+     * @brief PutObject
+     *
+     * @param bucket
+     * @param object object name
+     * @param data data to upload
+     * @param headers additional http headers
+     *
+     * @return
+     */
     std::string putObject(
         const std::string &bucket,
-        const std::string &object);
+        const std::string &object,
+        const std::string &data,
+        const std::map<std::string, std::string> &headers
+    );
+
+    std::string putObject(
+        const std::string &bucket,
+        const std::string &object,
+        const std::string &data
+    );
+
+    std::string headObject(
+        const std::string &bucket,
+        const std::string &object
+    );
+
+    std::string deleteObject(
+        const std::string &bucket,
+        const std::string &object
+    );
+
 
 private:
     std::string _host;

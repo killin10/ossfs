@@ -13,6 +13,7 @@
 
 #include <string>
 #include <list>
+#include <map>
 
 #include "http/http.h"
 #include "oss/OssMacros.h"
@@ -143,6 +144,187 @@ OssProxy::listObjects(
     return OSS_SUCCESS;
 }
 
+std::string
+OssProxy::putObject(
+    const std::string &bucket,
+    const std::string &object,
+    const std::string &data,
+    const std::map<std::string, std::string> &headers
+)
+{
+    OssRequest req;
+
+    req.setMethod(HttpRequest::PUT);
+    req.setHost(_host);
+    req.setURI(OSS_PATH_SEPARATOR_STR + bucket
+               + OSS_PATH_SEPARATOR_STR + object);
+
+    req.setContentLength(data.length());
+
+    for (std::map<std::string, std::string>::const_iterator it =
+             headers.begin(); it != headers.end(); ++it) {
+        req.setHeader(it->first, it->second);
+    }
+
+    req.setBody(data);
+
+    if (!req.sign(_accessId, _accessKey)) {
+        ERROR_LOG("sign request error");
+        return OSS_FAILED;
+    }
+
+    HttpConnection conn(_host);
+
+    int rv = 0;
+    rv = conn.connect();
+
+    if (-1 == rv) {
+        ERROR_LOG("connect to %s failed", _host.c_str());
+        return OSS_FAILED;
+    }
+
+    rv = conn.sendRequest(req);
+
+    if (-1 == rv) {
+        ERROR_LOG("send request error");
+        return OSS_FAILED;
+    }
+
+    OssResponse res;
+
+    rv = conn.recvResponse(&res);
+
+    if (-1 == rv) {
+        ERROR_LOG("recv response error");
+        return OSS_FAILED;
+    }
+
+    if (HttpResponse::SC_OK != res.getStatusCode()) {
+        ERROR_LOG("put object error, \n%s", res.getBody().c_str());
+        return OSS_FAILED;
+    }
+
+    return OSS_SUCCESS;
+}
+
+std::string
+OssProxy::putObject(
+    const std::string &bucket,
+    const std::string &object,
+    const std::string &data
+)
+{
+    std::map<std::string, std::string> nullHeaders;
+
+    return putObject(bucket, object, data, nullHeaders);
+}
+
+std::string
+OssProxy::headObject(
+    const std::string &bucket,
+    const std::string &object
+)
+{
+    OssRequest req;
+
+    req.setMethod(HttpRequest::HEAD);
+    req.setHost(_host);
+    req.setURI(OSS_PATH_SEPARATOR_STR + bucket
+               + OSS_PATH_SEPARATOR_STR + object);
+
+    if (!req.sign(_accessId, _accessKey)) {
+        ERROR_LOG("sign request error");
+        return OSS_FAILED;
+    }
+
+    HttpConnection conn(_host);
+
+    int rv = 0;
+    rv = conn.connect();
+
+    if (-1 == rv) {
+        ERROR_LOG("connect to %s failed", _host.c_str());
+        return OSS_FAILED;
+    }
+
+    rv = conn.sendRequest(req);
+
+    if (-1 == rv) {
+        ERROR_LOG("send request error");
+        return OSS_FAILED;
+    }
+
+    OssResponse res;
+
+    rv = conn.recvResponse(&res);
+
+    if (-1 == rv) {
+        ERROR_LOG("recv response error");
+        return OSS_FAILED;
+    }
+
+    if (HttpResponse::SC_OK != res.getStatusCode()) {
+        ERROR_LOG("put object error, \n%s", res.getBody().c_str());
+        return OSS_FAILED;
+    }
+
+    ERROR_LOG("x-oss-meta-linux-mod: %s",
+              res.getHeader("x-oss-meta-linux-mod").c_str());
+
+    return OSS_SUCCESS;
+}
+
+std::string
+OssProxy::deleteObject(
+    const std::string &bucket,
+    const std::string &object
+)
+{
+    OssRequest req;
+
+    req.setMethod(HttpRequest::DELETE);
+    req.setHost(_host);
+    req.setURI(OSS_PATH_SEPARATOR_STR + bucket
+               + OSS_PATH_SEPARATOR_STR + object);
+
+    if (!req.sign(_accessId, _accessKey)) {
+        ERROR_LOG("sign request error");
+        return OSS_FAILED;
+    }
+
+    HttpConnection conn(_host);
+
+    int rv = 0;
+    rv = conn.connect();
+
+    if (-1 == rv) {
+        ERROR_LOG("connect to %s failed", _host.c_str());
+        return OSS_FAILED;
+    }
+
+    rv = conn.sendRequest(req);
+
+    if (-1 == rv) {
+        ERROR_LOG("send request error");
+        return OSS_FAILED;
+    }
+
+    OssResponse res;
+
+    rv = conn.recvResponse(&res);
+
+    if (-1 == rv) {
+        ERROR_LOG("recv response error");
+        return OSS_FAILED;
+    }
+
+    if (HttpResponse::SC_OK != res.getStatusCode()) {
+        ERROR_LOG("delete object error, \n%s", res.getBody().c_str());
+        return OSS_FAILED;
+    }
+
+    return OSS_SUCCESS;
+}
 
 
 }  // namespace ossfs
