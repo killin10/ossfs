@@ -16,6 +16,9 @@
 #include "http/HttpRequest.h"
 
 
+#include <set>
+#include <string>
+
 namespace ossfs
 {
 
@@ -30,9 +33,16 @@ public:
     /**
      * @brief sign this request according to OSS spec.
      *
+     * @param id  Access Id
+     * @param key Access Key
+     *
      * @return
      */
-    bool sign();
+    bool sign(const std::string &id, const std::string &key);
+
+private:
+    // resources should be signed
+    static std::set<std::string> _signResources;
 };
 
 

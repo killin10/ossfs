@@ -18,6 +18,9 @@
 #include <string>
 #include <iostream>
 
+#define ACCESS_ID       "ACSIOdXqRDLx7OaP"
+#define ACCESS_KEY      "SS5bCvuE33"
+
 using namespace ossfs;
 
 int main()
@@ -28,7 +31,7 @@ int main()
     OssRequest req;
     req.setMethod(HttpRequest::GET);
     req.setURI(uri);
-    req.sign();
+    req.sign(ACCESS_ID, ACCESS_KEY);
 
     HttpConnection conn;
 

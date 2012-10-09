@@ -432,7 +432,7 @@ Xml::getNodeValue(XmlNode *curNode, std::string *value) const
     *value = (const char *) pXmlValue;
     xmlFree(pXmlValue);
 
-    return 0;
+    return true;
 }
 
 bool

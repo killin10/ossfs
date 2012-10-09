@@ -14,6 +14,7 @@
 #include <time.h>
 
 #include <string>
+#include <set>
 
 #include "http/HttpMacros.h"
 #include "http/HttpRequest.h"
@@ -27,11 +28,27 @@
 #define GMT_STR_LEN         30
 
 
-#define ACCESS_ID       "ACSIOdXqRDLx7OaP"
-#define ACCESS_KEY      "SS5bCvuE33"
-
 namespace ossfs
 {
+
+static std::set<std::string>::value_type signResourcesInit[] = {
+    std::set<std::string>::value_type(OSS_RESOURCE_ACL),
+    std::set<std::string>::value_type(OSS_RESOURCE_GROUP),
+    std::set<std::string>::value_type(OSS_RESOURCE_UPLOAD_ID),
+    std::set<std::string>::value_type(OSS_RESOURCE_PART_NUMBER),
+    std::set<std::string>::value_type(OSS_RESOURCE_UPLOADS),
+    std::set<std::string>::value_type(OSS_OVERRIDE_CONTENT_TYPE),
+    std::set<std::string>::value_type(OSS_OVERRIDE_CONTENT_LANGUAGE),
+    std::set<std::string>::value_type(OSS_OVERRIDE_EXPIRES),
+    std::set<std::string>::value_type(OSS_OVERRIDE_CACHE_CONTROL),
+    std::set<std::string>::value_type(OSS_OVERRIDE_CONTENT_DISPOSITION),
+    std::set<std::string>::value_type(OSS_OVERRIDE_CONTENT_ENCODING)
+};
+
+std::set<std::string> OssRequest::_signResources(
+    signResourcesInit,
+    signResourcesInit + 11
+);
 
 
 OssRequest::OssRequest()
@@ -48,7 +65,7 @@ OssRequest::OssRequest()
     struct tm ttm;
 
     //if (NULL == localtime_r(&t, &ttm)) {
-        //ERROR_LOG("localtime_r error, %s", strerror(errno));
+    //ERROR_LOG("localtime_r error, %s", strerror(errno));
     //}
 
     if (NULL == gmtime_r(&t, &ttm)) {
@@ -87,7 +104,7 @@ OssRequest::~OssRequest()
 }
 
 bool
-OssRequest::sign()
+OssRequest::sign(const std::string &id, const std::string &key)
 {
     std::string tosign = _method + "\n"
                          + "\n"
@@ -98,7 +115,7 @@ OssRequest::sign()
 
     for (std::map<std::string, std::string>::iterator it = _headers.begin();
          it != _headers.end(); ++it) {
-        if (0 == it->first.find(OSS_HTTP_HEADER_PREFIX)) {
+        if (0 == it->first.find(OSS_HEADER_PREFIX)) {
             headers += it->first
                        + HTTP_NAME_VALUE_SEPARATOR_STR
                        + it->second
@@ -106,14 +123,19 @@ OssRequest::sign()
         }
     }
 
-    std::string resources = _uri;
-
-    if (!_params.empty()) {
-        resources += HTTP_PARAM_LEADER_STR;
-    }
+    std::string resources = _uri + HTTP_PARAM_LEADER_STR;
 
     for (std::map<std::string, std::string>::iterator it = _params.begin();
          it != _params.end();) {
+        std::set<std::string>::iterator sit = _signResources.find(it->first);
+
+        if (_signResources.end() == sit) {
+            // do not need to be signed
+
+            ++it;
+            continue;
+        }
+
         if (it->second.empty()) {
             resources += it->first;
 
@@ -128,14 +150,22 @@ OssRequest::sign()
         }
     }
 
+    if (resources[resources.length() - 1] == HTTP_PARAM_NV_SEPARATOR_CHR) {
+        resources = resources.substr(0, resources.length() - 1);
+    }
+
+    if (resources[resources.length() - 1] == HTTP_PARAM_LEADER_CHR) {
+        resources = resources.substr(0, resources.length() - 1);
+    }
+
     tosign += headers + resources;
 
     std::string signd =
-        util::trim(Base64::encode(Hmac::hmac(ACCESS_KEY, tosign)));
+        util::trim(Base64::encode(Hmac::hmac(key, tosign)));
 
     setHeader(
         HTTP_AUTHORIZATION,
-        std::string("OSS ") + ACCESS_ID + ":" + signd
+        std::string("OSS ") + id + ":" + signd
     );
 
     return true;
