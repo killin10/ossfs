@@ -11,6 +11,8 @@
 
 #include "oss/OssProxy.h"
 
+#include <string.h>
+
 #include <string>
 #include <list>
 #include <map>
@@ -318,13 +320,94 @@ OssProxy::deleteObject(
         return OSS_FAILED;
     }
 
-    if (HttpResponse::SC_OK != res.getStatusCode()) {
+    // SC_NO_CONTENT - for success and no such object
+    if (HttpResponse::SC_NO_CONTENT != res.getStatusCode()) {
         ERROR_LOG("delete object error, \n%s", res.getBody().c_str());
         return OSS_FAILED;
     }
 
     return OSS_SUCCESS;
 }
+
+std::string
+OssProxy::getObject(
+    const std::string &bucket,
+    const std::string &object,
+    char *buf,
+    int len,
+    const std::map<std::string, std::string> &headers
+)
+{
+    OssRequest req;
+
+    req.setMethod(HttpRequest::GET);
+    req.setHost(_host);
+    req.setURI(OSS_PATH_SEPARATOR_STR + bucket
+               + OSS_PATH_SEPARATOR_STR + object);
+
+    for (std::map<std::string, std::string>::const_iterator it =
+             headers.begin(); it != headers.end(); ++it) {
+        req.setHeader(it->first, it->second);
+    }
+
+    if (!req.sign(_accessId, _accessKey)) {
+        ERROR_LOG("sign request error");
+        return OSS_FAILED;
+    }
+
+    HttpConnection conn(_host);
+
+    int rv = 0;
+    rv = conn.connect();
+
+    if (-1 == rv) {
+        ERROR_LOG("connect to %s failed", _host.c_str());
+        return OSS_FAILED;
+    }
+
+    rv = conn.sendRequest(req);
+
+    if (-1 == rv) {
+        ERROR_LOG("send request error");
+        return OSS_FAILED;
+    }
+
+    OssResponse res;
+
+    rv = conn.recvResponse(&res);
+
+    if (-1 == rv) {
+        ERROR_LOG("recv response error");
+        return OSS_FAILED;
+    }
+
+    if (HttpResponse::SC_OK != res.getStatusCode()
+        && HttpResponse::SC_PARTIAL_CONTENT != res.getStatusCode()) {
+        ERROR_LOG("get object error, \n%s", res.getBody().c_str());
+        return OSS_FAILED;
+    }
+
+    int cpyLen = (len > res.getBody().length()) ? res.getBody().length() : len;
+
+    memcpy(buf, res.getBody().c_str(), cpyLen);
+
+    return OSS_SUCCESS;
+}
+
+std::string
+OssProxy::getObject(
+    const std::string &bucket,
+    const std::string &object,
+    char *buf,
+    int len
+)
+{
+    std::map<std::string, std::string> nullHeaders;
+
+    return getObject(bucket, object, buf, len, nullHeaders);
+}
+
+
 
 
 }  // namespace ossfs

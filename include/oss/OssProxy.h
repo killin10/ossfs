@@ -91,6 +91,22 @@ public:
         const std::string &object
     );
 
+    std::string getObject(
+        const std::string &bucket,
+        const std::string &object,
+        char *buf,
+        int len,
+        const std::map<std::string, std::string> &headers
+    );
+
+    std::string getObject(
+        const std::string &bucket,
+        const std::string &object,
+        char *buf,
+        int len
+    );
+
+
 
 private:
     std::string _host;
