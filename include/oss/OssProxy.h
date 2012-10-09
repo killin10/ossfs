@@ -83,7 +83,15 @@ public:
 
     std::string headObject(
         const std::string &bucket,
-        const std::string &object
+        const std::string &object,
+        std::map<std::string, std::string> *metas
+    );
+
+    std::string headObject(
+        const std::string &bucket,
+        const std::string &object,
+        std::map<std::string, std::string> *metas,
+        const std::map<std::string, std::string> &headers
     );
 
     std::string deleteObject(

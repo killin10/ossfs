@@ -224,7 +224,9 @@ OssProxy::putObject(
 std::string
 OssProxy::headObject(
     const std::string &bucket,
-    const std::string &object
+    const std::string &object,
+    std::map<std::string, std::string> *metas,
+    const std::map<std::string, std::string> &headers
 )
 {
     OssRequest req;
@@ -233,6 +235,11 @@ OssProxy::headObject(
     req.setHost(_host);
     req.setURI(OSS_PATH_SEPARATOR_STR + bucket
                + OSS_PATH_SEPARATOR_STR + object);
+
+    for (std::map<std::string, std::string>::const_iterator it =
+             headers.begin(); it != headers.end(); ++it) {
+        req.setHeader(it->first, it->second);
+    }
 
     if (!req.sign(_accessId, _accessKey)) {
         ERROR_LOG("sign request error");
@@ -270,11 +277,23 @@ OssProxy::headObject(
         return OSS_FAILED;
     }
 
-    ERROR_LOG("x-oss-meta-linux-mod: %s",
-              res.getHeader("x-oss-meta-linux-mod").c_str());
+    *metas = res.getHeaders();
 
     return OSS_SUCCESS;
 }
+
+std::string
+OssProxy::headObject(
+    const std::string &bucket,
+    const std::string &object,
+    std::map<std::string, std::string> *metas
+)
+{
+    std::map<std::string, std::string> nullHeaders;
+
+    return headObject(bucket, object, metas, nullHeaders);
+}
+
 
 std::string
 OssProxy::deleteObject(

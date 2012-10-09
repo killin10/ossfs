@@ -87,6 +87,8 @@ public:
 
     void setContentLength(int len);
 
+    inline const std::map<std::string, std::string> &getHeaders() const;
+
     bool hasHeader(const std::string &name) const;
 
     void setHeader(const std::string &name, const std::string &value);
@@ -160,6 +162,12 @@ std::string
 HttpResponse::getReasonPhrase() const
 {
     return _reasonPhrase;
+}
+
+const std::map<std::string, std::string> &
+HttpResponse::getHeaders() const
+{
+    return _headers;
 }
 
 void
