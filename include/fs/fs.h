@@ -99,6 +99,8 @@ int ossfs_release(const char *path, struct fuse_file_info *fi);
 
 int ossfs_create(const char *path, mode_t mode, struct fuse_file_info *fi);
 
+int ossfs_chmod(const char *path, mode_t mode);
+
 
 }  // namespace ossfs
 

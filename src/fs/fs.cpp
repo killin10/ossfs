@@ -317,11 +317,17 @@ ossfs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
     if (spath == MOUNT_POINT) {
         for (std::list<std::string>::iterator it = entries.begin();
              it != entries.end(); ++it) {
-            if (!refer_to_dir(*it)) {
+            if (!refer_to_dir(*it)
+                && it->find(OSS_PATH_SEPARATOR_STR) != std::string::npos) {
                 continue;
             }
 
-            entry = it->substr(0, it->length() - 1);
+            if (refer_to_dir(*it)) {
+                entry = it->substr(0, it->length() - 1);
+
+            } else {
+                entry = *it;
+            }
 
             filler(buf, entry.c_str(), NULL, 0);
         }
@@ -577,7 +583,21 @@ do_write_to_buffer(struct oss_file_info *info, const char *buf,
     std::map<off_t, struct oss_file_block *>::iterator it =
         info->fi_data.lower_bound(offset);
 
-    if (offset != it->first) {
+    if (info->fi_data.end() == it) {
+        struct oss_file_block *nblk = new oss_file_block();
+
+        info->fi_data.insert(
+            std::pair<off_t, struct oss_file_block *>(offset, nblk)
+        );
+
+        nblk->fb_buf = new char[OSS_FILE_BLOCK_SIZE];
+        nblk->fb_len = OSS_FILE_BLOCK_SIZE;
+
+        memset(nblk->fb_buf, 0, nblk->fb_len);
+
+        it = info->fi_data.lower_bound(offset);
+
+    } else if (offset != it->first) {
         --it;
     }
 
@@ -639,6 +659,7 @@ do_write_to_buffer(struct oss_file_info *info, const char *buf,
 
     if (offset + size > info->fi_size) {
         info->fi_size = offset + size;
+        INFO_LOG("%d", info->fi_size);
     }
 
     return size;
@@ -699,10 +720,14 @@ ossfs_release(const char *path, struct fuse_file_info *fi)
 
     OssProxy proxy(HOST, ACCESS_ID, ACCESS_KEY);
 
+    INFO_LOG("info->fi_size %d", info->fi_size);
     rc = proxy.putObject(BUCKET, object, buf, info->fi_size, metas);
 
     delete [] buf;
     buf = NULL;
+
+    delete info;
+    info = NULL;
 
     if (OSS_SUCCESS != rc) {
         return -ENETUNREACH;
@@ -740,6 +765,12 @@ ossfs_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 
     fi->fh = (uint64_t) info;
 
+    return 0;
+}
+
+int
+ossfs_chmod(const char *path, mode_t mode)
+{
     return 0;
 }
 
