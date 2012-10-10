@@ -78,6 +78,14 @@ public:
     std::string putObject(
         const std::string &bucket,
         const std::string &object,
+        const char *data,
+        int len,
+        const std::map<std::string, std::string> &headers
+    );
+
+    std::string putObject(
+        const std::string &bucket,
+        const std::string &object,
         const std::string &data
     );
 
@@ -114,7 +122,18 @@ public:
         int len
     );
 
+    std::string copyObject(
+        const std::string &bucket,
+        const std::string &src,
+        const std::string &dest,
+        const std::map<std::string, std::string> &headers
+    );
 
+    std::string copyObject(
+        const std::string &bucket,
+        const std::string &src,
+        const std::string &dest
+    );
 
 private:
     std::string _host;

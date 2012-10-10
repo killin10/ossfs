@@ -70,11 +70,8 @@ OssProxy::listObjects(
     req.setHost(_host);
     req.setURI(OSS_PATH_SEPARATOR_STR + bucket);
 
-    if (!prefix.empty()) {
+    if (!prefix.empty() && !delimiter.empty()) {
         req.setParameter(OSS_PARAM_PREFIX, prefix);
-    }
-
-    if (!delimiter.empty()) {
         req.setParameter(OSS_PARAM_DELIMITER, delimiter);
     }
 
@@ -150,7 +147,8 @@ std::string
 OssProxy::putObject(
     const std::string &bucket,
     const std::string &object,
-    const std::string &data,
+    const char *data,
+    int len,
     const std::map<std::string, std::string> &headers
 )
 {
@@ -161,14 +159,14 @@ OssProxy::putObject(
     req.setURI(OSS_PATH_SEPARATOR_STR + bucket
                + OSS_PATH_SEPARATOR_STR + object);
 
-    req.setContentLength(data.length());
+    req.setContentLength(len);
 
     for (std::map<std::string, std::string>::const_iterator it =
              headers.begin(); it != headers.end(); ++it) {
         req.setHeader(it->first, it->second);
     }
 
-    req.setBody(data);
+    req.setBody(data, len);
 
     if (!req.sign(_accessId, _accessKey)) {
         ERROR_LOG("sign request error");
@@ -207,6 +205,17 @@ OssProxy::putObject(
     }
 
     return OSS_SUCCESS;
+}
+
+std::string
+OssProxy::putObject(
+    const std::string &bucket,
+    const std::string &object,
+    const std::string &data,
+    const std::map<std::string, std::string> &headers
+)
+{
+    return putObject(bucket, object, data.c_str(), data.length(), headers);
 }
 
 std::string
@@ -273,7 +282,12 @@ OssProxy::headObject(
     }
 
     if (HttpResponse::SC_OK != res.getStatusCode()) {
-        ERROR_LOG("put object error, \n%s", res.getBody().c_str());
+        ERROR_LOG("head object error, \n%s", res.getBody().c_str());
+
+        if (HttpResponse::SC_NOT_FOUND == res.getStatusCode()) {
+            return OSS_NOT_FOUND;
+        }
+
         return OSS_FAILED;
     }
 
@@ -424,6 +438,85 @@ OssProxy::getObject(
     std::map<std::string, std::string> nullHeaders;
 
     return getObject(bucket, object, buf, len, nullHeaders);
+}
+
+std::string
+OssProxy::copyObject(
+    const std::string &bucket,
+    const std::string &src,
+    const std::string &dest,
+    const std::map<std::string, std::string> &headers
+)
+{
+    OssRequest req;
+
+    req.setMethod(HttpRequest::PUT);
+    req.setHost(_host);
+    req.setURI(OSS_PATH_SEPARATOR_STR + bucket
+               + OSS_PATH_SEPARATOR_STR + dest);
+
+    req.setContentLength(0);
+
+    for (std::map<std::string, std::string>::const_iterator it =
+             headers.begin(); it != headers.end(); ++it) {
+        req.setHeader(it->first, it->second);
+    }
+
+    req.setHeader(
+        OSS_HEADER_COPY,
+        OSS_PATH_SEPARATOR_STR + bucket + OSS_PATH_SEPARATOR_STR + src
+    );
+    req.setHeader(OSS_HEADER_METADATA_DIRECTIVE, OSS_METADATA_DIRECTIVE_COPY);
+
+    if (!req.sign(_accessId, _accessKey)) {
+        ERROR_LOG("sign request error");
+        return OSS_FAILED;
+    }
+
+    HttpConnection conn(_host);
+
+    int rv = 0;
+    rv = conn.connect();
+
+    if (-1 == rv) {
+        ERROR_LOG("connect to %s failed", _host.c_str());
+        return OSS_FAILED;
+    }
+
+    rv = conn.sendRequest(req);
+
+    if (-1 == rv) {
+        ERROR_LOG("send request error");
+        return OSS_FAILED;
+    }
+
+    OssResponse res;
+
+    rv = conn.recvResponse(&res);
+
+    if (-1 == rv) {
+        ERROR_LOG("recv response error");
+        return OSS_FAILED;
+    }
+
+    if (HttpResponse::SC_OK != res.getStatusCode()) {
+        ERROR_LOG("copy object error, \n%s", res.getBody().c_str());
+        return OSS_FAILED;
+    }
+
+    return OSS_SUCCESS;
+}
+
+std::string
+OssProxy::copyObject(
+    const std::string &bucket,
+    const std::string &src,
+    const std::string &dest
+)
+{
+    std::map<std::string, std::string> nullHeaders;
+
+    return copyObject(bucket, src, dest, nullHeaders);
 }
 
 

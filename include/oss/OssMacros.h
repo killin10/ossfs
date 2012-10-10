@@ -17,7 +17,13 @@
 
 #define OSS_USER_META_HEADER_PREFIX     "x-oss-meta-"
 
+#define OSS_HEADER_COPY        "x-oss-copy-source"
+#define OSS_HEADER_METADATA_DIRECTIVE       "x-oss-metadata-directive"
+#define OSS_METADATA_DIRECTIVE_COPY     "COPY"
+#define OSS_METADATA_DIRECTIVE_REPLACE  "REPLACE"
+
 #define OSS_PATH_SEPARATOR_STR      "/"
+#define OSS_PATH_SEPARATOR_CHR      '/'
 
 // sub resources and override query string should be signed
 
@@ -44,6 +50,7 @@
 
 #define OSS_SUCCESS      "OssSuccess"
 #define OSS_FAILED       "OssFailed"
+#define OSS_NOT_FOUND    "OssNotFound"
 
 
 

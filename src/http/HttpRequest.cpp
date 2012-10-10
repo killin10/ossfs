@@ -155,7 +155,7 @@ HttpRequest::serializeToString(
 
     for (std::map<std::string, std::string>::const_iterator it =
              _params.begin(); it != _params.end();) {
-        furi += it->first + HTTP_NAME_VALUE_SEPARATOR_STR + it->second;
+        furi += it->first + HTTP_PARAM_NV_SEPARATOR_STR + it->second;
 
         if ((++it) != _params.end()) {
             furi += HTTP_PARAM_SEPARATOR_STR;

@@ -49,6 +49,8 @@
 #define HTTP_DATE                   "Date"
 #define HTTP_AUTHORIZATION          "Authorization"
 #define HTTP_HOST                   "Host"
+#define HTTP_LAST_MODIFIED          "Last-Modified"
+#define HTTP_RANGE                  "Range"
 
 
 #endif  // http_HttpMacros_H_

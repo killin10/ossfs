@@ -148,6 +148,8 @@ public:
      */
     inline void setBody(const std::string &body);
 
+    inline void setBody(const char *buf, int len);
+
     /**
      * @brief append more data to request body
      *
@@ -239,6 +241,12 @@ void
 HttpRequest::setBody(const std::string &body)
 {
     _body = body;
+}
+
+void
+HttpRequest::setBody(const char *buf, int len)
+{
+    _body.assign(buf, len);
 }
 
 void
