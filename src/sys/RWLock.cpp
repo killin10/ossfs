@@ -9,7 +9,7 @@
  * @author shiwei<shiwei2012@gmail.com>
  */
 
-#include "RWLock.h"
+#include "sys/RWLock.h"
 
 #include "log/log.h"
 

@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "Mutex.h"
+#include "sys/Mutex.h"
 
 #include <cstdlib>
 #include <cerrno>
