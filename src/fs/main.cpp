@@ -32,6 +32,7 @@ main(int argc, char *argv[])
         oss_oper.open = ossfs_open;
         oss_oper.read = ossfs_read;
         oss_oper.write = ossfs_write;
+        oss_oper.release = ossfs_release;
         oss_oper.create = ossfs_create;
     }
 
